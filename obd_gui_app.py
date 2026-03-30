@@ -1499,7 +1499,7 @@ class OBDApp(ctk.CTk):
 
         # Przycisk Stop
         self.replay_stop_btn = ctk.CTkButton(
-            self.replay_bar, text="âŹą", width=44, height=36,
+            self.replay_bar, text="◼", width=44, height=36,
             font=ctk.CTkFont(size=20), fg_color="#B22222", hover_color="#8B0000",
             command=self._replay_stop
         )
@@ -1507,7 +1507,7 @@ class OBDApp(ctk.CTk):
 
         # Przycisk Play/Pause (toggle)
         self.replay_pause_btn = ctk.CTkButton(
-            self.replay_bar, text="âŹ¸", width=44, height=36,
+            self.replay_bar, text="▶", width=44, height=36,
             font=ctk.CTkFont(size=20), fg_color="#1f538d", hover_color="#3a7ebf",
             command=self._replay_toggle_pause
         )
@@ -2452,7 +2452,7 @@ class OBDApp(ctk.CTk):
                 ff_msg = texts["dtc_ff_sim"]
                 
             for kod, opis in codes:
-                self.dtc_text.insert("end", f"–ş {kod}: {opis}\n")
+                self.dtc_text.insert("end", f"▶ {kod}: {opis}\n")
                 self.dtc_text.insert("end", f"   {ff_msg}\n\n")
             self.dtc_text.insert("end", ("="*55) + "\n" + texts["dtc_suggestion"])
             
@@ -2522,7 +2522,7 @@ class OBDApp(ctk.CTk):
             vid_display = ""
             import re
             m = re.match(r"^\[(.*?)\]_log_obd_", fname)
-            if m: vid_display = f"đźš {m.group(1)} | "
+            if m: vid_display = f"🚗 {m.group(1)} | "
 
             row = ctk.CTkFrame(self.sessions_scroll, corner_radius=8, border_width=1, border_color="#333333")
             row.pack(fill="x", padx=10, pady=5)
@@ -2663,7 +2663,7 @@ class OBDApp(ctk.CTk):
             self.replay_stop_btn.grid(row=0, column=0, padx=(10, 4), pady=9)
             self._replay_timeline_frame.grid(row=0, column=1, sticky="ew", padx=6)
             self.replay_pause_btn.grid(row=0, column=2, padx=(4, 10), pady=0) # mniejszy pady by sie zmiescilo
-            self.replay_pause_btn.configure(text="âŹ¸")
+            self.replay_pause_btn.configure(text="▶")
             # --------------------------------------------
             
             # 4. Synchronizacja stanu GUI z logiem (1:1)
@@ -2894,10 +2894,10 @@ class OBDApp(ctk.CTk):
         if not is_pausing:
             # WZNAWIANIE: Synchronizuj bazę czasu, by playback ruszył od razu od obecnego indexu
             self._replay_sync_time_base()
-            self.replay_pause_btn.configure(text="âŹ¸")
+            self.replay_pause_btn.configure(text="▶")
         else:
             # PAUZOWANIE
-            self.replay_pause_btn.configure(text="–¶")
+            self.replay_pause_btn.configure(text="⏸")
 
         self.backend.is_replay_paused = is_pausing
         self.update_status_labels()
