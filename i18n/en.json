@@ -241,7 +241,7 @@
     "err_port_denied": "Permission denied for port {p}. Close other programs.",
     "err_port_missing": "Port {p} does not exist. Check adapter connection.",
     "err_elm_no_veh": "ELM327 connected, but vehicle not responding. Check ignition.",
-    "tab_stl": "Stellantis Specialist",
+    "tab_stl": "🛠️ Stellantis Specialist",
     "stl_brand_lbl": "Brand:",
     "stl_model_lbl": "Model:",
     "stl_exec_btn": "Execute",

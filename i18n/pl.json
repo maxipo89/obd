@@ -241,7 +241,7 @@
     "err_port_denied": "Brak uprawnień do portu {p}. Zamknij inne programy.",
     "err_port_missing": "Port {p} nie istnieje. Sprawdź połączenie adaptera.",
     "err_elm_no_veh": "ELM327 podłączony, ale pojazd nie odpowiada. Sprawdź zapłon.",
-    "tab_stl": "Stellantis Specialist",
+    "tab_stl": "🛠️ Stellantis Specialist",
     "stl_brand_lbl": "Marka:",
     "stl_model_lbl": "Model:",
     "stl_exec_btn": "Wykonaj",
