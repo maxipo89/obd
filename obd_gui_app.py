@@ -824,8 +824,8 @@ class OBDBackend:
             if was_looping:
                 self.is_connected_loop = True
 
-    def execute_uds_custom(self, commands: list, security_code: str = None) -> tuple[bool, str]:
-        """Wykonuje listę komend UDS z opcjonalnym kodem bezpieczeństwa."""
+    def execute_uds_custom(self, target_header: str, commands: list, security_code: str = None, is_restore: bool = False) -> tuple[bool, str]:
+        """Wykonuje listę komend UDS z funkcjonalnością backupu i niestandardowymi docelowymi headerami CAN."""
         if not self.connection or not self.connection.is_connected():
             return False, "Brak połączenia z interfejsem."
         
@@ -835,19 +835,43 @@ class OBDBackend:
 
         was_looping = self.is_connected_loop
         self.is_connected_loop = False
+        time.sleep(0.4)
         try:
-            # 1. Start Extended Diagnostic Session ($10 03)
-            # Domyślny Header dla CAN UDS. Powinien być konfigurowalny, ale dla większości Stellantis to 7E0/7E8 or similar.
-            # Wykorzystujemy 714 jako placeholder lub tryb auto jeśli interfejs na to pozwala.
-            interface.send_and_receive(b"AT SH 714") 
+            # Ustawienie nagłówka specyficzne dla Stellantis / UDS
+            header = "714"
+            if len(target_header) == 3 and target_header.isalnum():
+                header = target_header
+            elif "ECM" in target_header: header = "7E0"
+            elif "BCM" in target_header or "BSI" in target_header: header = "7A6"
+            elif "IPC" in target_header: header = "7A0"
+            else: header = target_header
+
+            interface.send_and_receive(f"AT SH {header}".encode()) 
             interface.send_and_receive(b"1003")
             
             if security_code:
-                # Mock Security Access
                 interface.send_and_receive(b"2701")
                 interface.send_and_receive(f"2702{security_code}".encode())
 
             results = []
+            for cmd in commands:
+                clean_cmd = cmd.replace(" ", "")
+                
+                # Auto-backup dla Stellantis przy komendach 2E (Write Data By Identifier)
+                if not is_restore and clean_cmd.startswith("2E") and len(clean_cmd) >= 6:
+                    did = clean_cmd[2:6]
+                    try:
+                        read_resp = interface.send_and_receive(f"22{did}".encode())
+                        if read_resp and read_resp.startswith(b"62"):
+                            self._save_vag_backup(header, did, read_resp.decode() if isinstance(read_resp, bytes) else str(read_resp))
+                    except:
+                        pass
+                
+                resp = interface.send_and_receive(clean_cmd.encode())
+                results.append(resp.decode() if isinstance(resp, bytes) else str(resp))
+                time.sleep(0.1)
+
+            return True, " | ".join(results)
             for cmd in commands:
                 resp = interface.send_and_receive(cmd.encode())
                 results.append(resp.decode() if isinstance(resp, bytes) else str(resp))
@@ -984,7 +1008,8 @@ class OBDApp(ctk.CTk):
                 ],
                 "Astra K / Insignia B": [
                     {"id": "opel_needle_uds", "name_key": "stl_op_needle", "module": "IPC", "commands": ["1003", "2E060D01"]},
-                    {"id": "opel_eco_off", "name_key": "stl_op_eco", "module": "BCM", "commands": ["1003", "2E010200"]}
+                    {"id": "opel_eco_off", "name_key": "stl_op_eco", "module": "BCM", "commands": ["1003", "2E010200"]},
+                    {"id": "opel_theme", "name_key": "stl_opel_theme", "module": "IPC", "commands": ["1003", "2E08A201"]}
                 ],
                 "Corsa E": [
                     {"id": "opel_rev_camera", "name_key": "stl_op_camera", "module": "DISP", "commands": ["1003", "2E098201"]}
@@ -994,13 +1019,32 @@ class OBDApp(ctk.CTk):
                 "Tipo / 500X": [
                     {"id": "fiat_srv_reset", "name_key": "stl_fi_srv_reset", "module": "BCM", "commands": ["1003", "31020004"]},
                     {"id": "fiat_dpf_regen", "name_key": "stl_fi_dpf", "module": "ECM", "commands": ["1003", "31010005"]},
-                    {"id": "fiat_learn_proxy", "name_key": "stl_fi_proxy", "module": "BCM", "commands": ["1080", "1081", "31010203"]}
+                    {"id": "fiat_learn_proxy", "name_key": "stl_fi_proxy", "module": "BCM", "commands": ["1080", "1081", "31010203"]},
+                    {"id": "fiat_corner", "name_key": "stl_fiat_cornering", "module": "BCM", "commands": ["1003", "2E054201"]}
                 ]
             },
             "PSA (Peugeot/Citroen)": {
                 "308 / 508 / C4": [
                     {"id": "psa_mirror_fold", "name_key": "stl_psa_mirror", "module": "BSI", "commands": ["1003", "2E013401"]},
-                    {"id": "psa_drl_menu", "name_key": "stl_psa_drl", "module": "BSI", "commands": ["1003", "2E054101"]}
+                    {"id": "psa_drl_menu", "name_key": "stl_psa_drl", "module": "BSI", "commands": ["1003", "2E054101"]},
+                    {"id": "psa_vim", "name_key": "stl_psa_video", "module": "NAC", "commands": ["1003", "2E065201"]},
+                    {"id": "psa_diag_screen", "name_key": "stl_psa_diag", "module": "SMEG", "commands": ["1003", "2E091101"]},
+                    {"id": "psa_startstop", "name_key": "stl_psa_startstop", "module": "BSI", "commands": ["1003", "2E010200"]}
+                ]
+            },
+            "Alfa Romeo": {
+                "Giulia / Stelvio": [
+                    {"id": "alfa_sgw", "name_key": "stl_alfa_sgw", "module": "SGW", "commands": ["1003", "31010201"]},
+                    {"id": "alfa_race", "name_key": "stl_alfa_dyn", "module": "BCM", "commands": ["1003", "2E054501"]},
+                    {"id": "alfa_seatbelt", "name_key": "stl_alfa_seatbelt", "module": "IPC", "commands": ["1003", "2E033100"]},
+                    {"id": "alfa_logo", "name_key": "stl_alfa_logo", "module": "ETM", "commands": ["1003", "2E098402"]}
+                ]
+            },
+            "Jeep": {
+                "Renegade / Compass": [
+                    {"id": "jeep_drl", "name_key": "stl_jeep_drl", "module": "BCM", "commands": ["1003", "2E023101"]},
+                    {"id": "jeep_horn", "name_key": "stl_jeep_horn", "module": "BCM", "commands": ["1003", "2E012401"]},
+                    {"id": "jeep_offroad", "name_key": "stl_jeep_offroad", "module": "RADIO", "commands": ["1003", "2E0CC201"]}
                 ]
             }
         }
@@ -1364,6 +1408,10 @@ class OBDApp(ctk.CTk):
             try:
                 widget.configure(text=texts.get(key, key))
             except Exception: pass
+        # Refresh Stellantis tweak list to update names and buttons
+        try:
+            self._on_stl_model_changed(self.stl_model_menu.get())
+        except Exception: pass
 
         # Card Labels
         self.update_digital_indicators()
@@ -1788,8 +1836,87 @@ class OBDApp(ctk.CTk):
         self.stl_tweak_scroll = ctk.CTkScrollableFrame(tab, fg_color="transparent")
         self.stl_tweak_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
         
+        # --- Stellantis Expert Mode Frame ---
+        expert_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color="#1E3A5F", corner_radius=12)
+        expert_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=(12, 4))
+        
+        expert_desc = ctk.CTkLabel(expert_frame, text=texts.get("stl_expert_desc", "TRYB EKSPERCKI (STELLANTIS)"), font=ctk.CTkFont(size=12, weight="bold"))
+        expert_desc.grid(row=0, column=0, columnspan=5, padx=15, pady=(10, 5), sticky="w")
+        self._stl_i18n_widgets["stl_expert_desc"] = expert_desc
+
+        ctk.CTkLabel(expert_frame, text=texts["vag_header_lbl"]).grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
+        self.stl_expert_header = ctk.CTkEntry(expert_frame, width=80, placeholder_text="714")
+        self.stl_expert_header.grid(row=1, column=1, padx=5, pady=8)
+
+        ctk.CTkLabel(expert_frame, text=texts["vag_command_lbl"]).grid(row=1, column=2, padx=(15, 5), pady=8, sticky="w")
+        self.stl_expert_cmd = ctk.CTkEntry(expert_frame, width=300, placeholder_text="2E060D01")
+        self.stl_expert_cmd.grid(row=1, column=3, padx=5, pady=8)
+
+        self._stl_expert_send_btn = ctk.CTkButton(expert_frame, text=texts["vag_btn_send"], width=100, command=self.action_stl_send_hex)
+        self._stl_expert_send_btn.grid(row=1, column=4, padx=(5, 15), pady=8)
+        self._stl_i18n_widgets["vag_btn_send"] = self._stl_expert_send_btn
+
+        # --- Stellantis Dataset Loader Frame ---
+        zdc_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color="#5C1F0A", corner_radius=12)
+        zdc_frame.grid(row=4, column=0, sticky="ew", padx=20, pady=(4, 12))
+        
+        zdc_hdr = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_section_header", "Dataset Loader"), font=ctk.CTkFont(size=12, weight="bold"), text_color="#ff8c00")
+        zdc_hdr.grid(row=0, column=0, columnspan=5, padx=15, pady=(10, 5), sticky="w")
+        self._stl_i18n_widgets["zdc_section_header"] = zdc_hdr
+
+        ctk.CTkLabel(zdc_frame, text=texts["zdc_module_label"]).grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
+        self.stl_zdc_module_entry = ctk.CTkEntry(zdc_frame, width=60, placeholder_text="01")
+        self.stl_zdc_module_entry.grid(row=1, column=1, padx=5, pady=8)
+
+        self._stl_zdc_filepath = ctk.StringVar(value="")
+        self.stl_zdc_file_lbl = ctk.CTkLabel(zdc_frame, textvariable=self._stl_zdc_filepath, text_color="#aaaaaa", width=320, anchor="w")
+        self.stl_zdc_file_lbl.grid(row=1, column=2, padx=10, pady=8, sticky="ew")
+
+        self._stl_zdc_browse_btn = ctk.CTkButton(zdc_frame, text=texts.get("zdc_choose_file", "📁 Wybierz"), width=130, fg_color="#2a3a50", command=self._action_stl_zdc_browse)
+        self._stl_zdc_browse_btn.grid(row=1, column=3, padx=5, pady=8)
+        self._stl_i18n_widgets["zdc_choose_file"] = self._stl_zdc_browse_btn
+
+        self._stl_zdc_load_btn = ctk.CTkButton(zdc_frame, text=texts.get("zdc_upload", "⬆️ Wgraj"), width=130, fg_color="#8B3A1E", command=self._action_stl_zdc_load)
+        self._stl_zdc_load_btn.grid(row=1, column=4, padx=(5, 15), pady=8)
+        self._stl_i18n_widgets["zdc_upload"] = self._stl_zdc_load_btn
+
         # Inicjalizacja listy modeli
+        # Wait, self.stl_brand_menu needs to be assigned before _on_stl_brand_changed
         self._on_stl_brand_changed(self.stl_brand_menu.get())
+
+    def action_stl_send_hex(self):
+        texts = LOCALIZATION[self.current_lang]
+        if not self.backend.connection or not self.backend.connection.is_connected():
+            messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
+            return
+        header = self.stl_expert_header.get().strip() or "714"
+        cmd = self.stl_expert_cmd.get().strip()
+        if not cmd: return
+        ok, res = self.backend.execute_uds_custom(header, [cmd])
+        if ok: messagebox.showinfo(texts.get("success", "Sukces"), res)
+        else: messagebox.showerror(texts.get("err_title", "Błąd"), res)
+
+    def _action_stl_zdc_browse(self):
+        texts = LOCALIZATION[self.current_lang]
+        import tkinter.filedialog as filedialog
+        path = filedialog.askopenfilename(title=texts["zdc_choose_file"], filetypes=[("Dataset", "*.zdc *.hex *.txt"), ("All", "*.*")])
+        if path: self._stl_zdc_filepath.set(path)
+
+    def _action_stl_zdc_load(self):
+        texts = LOCALIZATION[self.current_lang]
+        path = self._stl_zdc_filepath.get()
+        mod = self.stl_zdc_module_entry.get().strip()
+        if not path or not mod:
+            messagebox.showwarning(texts.get("err_title", "Błąd"), texts.get("zdc_no_file", "Wybierz plik i moduł!"))
+            return
+        try:
+            with open(path, 'r') as f: lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+            if messagebox.askyesno(texts.get("zdc_confirm_title", "Wgrać?"), texts.get("zdc_confirm_msg", "Wgrać {} komend?").format(len(lines))):
+                ok, res = self.backend.execute_uds_custom(mod, lines)
+                if ok: messagebox.showinfo(texts.get("success", "Sukces"), texts.get("zdc_success", "Wgrano pomyślnie!"))
+                else: messagebox.showerror(texts.get("err_title", "Błąd"), res)
+        except Exception as e:
+            messagebox.showerror(texts.get("err_title", "Błąd"), str(e))
 
     def _on_stl_brand_changed(self, brand):
         models = list(self.STELLANTIS_TWEAKS_CONFIG.get(brand, {}).keys())
@@ -1814,10 +1941,30 @@ class OBDApp(ctk.CTk):
             lbl_name.pack(side="left", padx=15, pady=12)
             lbl_mod = ctk.CTkLabel(f, text=f"({tweak['module']})", font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
             lbl_mod.pack(side="left", padx=2)
-            btn = ctk.CTkButton(f, text=texts.get("stl_exec_btn", "Wykonaj"), width=100, command=lambda t=tweak: self._execute_stl_tweak(t))
-            btn.pack(side="right", padx=15, pady=10)
+            btn_apply = ctk.CTkButton(f, text=texts.get("stl_btn_apply", "Wykonaj"), width=100, fg_color="#1E3A5F", command=lambda t=tweak: self._execute_stl_tweak(t))
+            btn_apply.pack(side="right", padx=10, pady=10)
+            
+            btn_restore = ctk.CTkButton(f, text=texts.get("stl_btn_restore", "Przywróć"), width=100, fg_color="#5F1E1E", command=lambda t=tweak: self._restore_stl_tweak(t))
+            btn_restore.pack(side="right", padx=5, pady=10)
 
     def _execute_stl_tweak(self, tweak):
+        texts = LOCALIZATION[self.current_lang]
+        if messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_confirm_msg", "Czy wykonać ten tweak?")):
+            ok, res = self.backend.execute_uds_custom(tweak["module"], tweak["commands"])
+            if ok:
+                messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_applied", "Tweak zastosowany!"))
+            else:
+                messagebox.showerror(texts.get("err_title", "Błąd"), f"{texts.get('stl_tweak_error', 'Błąd')}: {res}")
+
+    def _restore_stl_tweak(self, tweak):
+        texts = LOCALIZATION[self.current_lang]
+        if messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_restore_confirm_msg", "Przywrócić oryginał?")):
+            # is_restore=True tells execute_uds_custom NOT to try to read/backup again
+            ok, res = self.backend.execute_uds_custom(tweak["module"], tweak["commands"], is_restore=True)
+            if ok:
+                messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_restored", "Przywrócono!"))
+            else:
+                messagebox.showerror(texts.get("err_title", "Błąd"), res)
         texts = LOCALIZATION[self.current_lang]
         if not self.backend.connection or not self.backend.connection.is_connected():
             messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
@@ -1885,7 +2032,7 @@ class OBDApp(ctk.CTk):
             ok, res = self.backend.execute_vag_tp20_command(header, [cmd])
         else:
             # UDS custom handle
-            ok, res = self.backend.execute_uds_custom([cmd])
+            ok, res = self.backend.execute_uds_custom(header, [cmd])
             
         if ok:
             messagebox.showinfo(texts.get("success", "Sukces"), res)
