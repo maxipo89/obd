@@ -1563,7 +1563,7 @@ class OBDApp(ctk.CTk):
         self.btn_scan_dtc = ctk.CTkButton(toolbar, text=texts["scan_dtc_btn"], width=180, height=40, font=ctk.CTkFont(weight="bold"), command=self.action_scan_dtc)
         self.btn_scan_dtc.pack(side="left", padx=5)
         
-        self.btn_export_dtc = ctk.CTkButton(toolbar, text="đź’ľ Export CSV", width=120, height=40, font=ctk.CTkFont(weight="bold"), command=self.action_export_dtc, fg_color="#1f538d", hover_color="#3a7ebf")
+        self.btn_export_dtc = ctk.CTkButton(toolbar, text="💾 Export CSV", width=120, height=40, font=ctk.CTkFont(weight="bold"), command=self.action_export_dtc, fg_color="#1f538d", hover_color="#3a7ebf")
         self.btn_export_dtc.pack(side="left", padx=5)
         
         self.btn_clear_dtc = ctk.CTkButton(toolbar, text=texts["clear_dtc_btn"], fg_color="#B22222", hover_color="#8B0000", width=220, height=40, font=ctk.CTkFont(weight="bold"), command=self.action_clear_dtc)
