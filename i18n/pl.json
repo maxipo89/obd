@@ -240,6 +240,24 @@
     "err_port_busy": "Port {p} jest zajęty lub nie istnieje. Sprawdź Menedżer Urządzeń.",
     "err_port_denied": "Brak uprawnień do portu {p}. Zamknij inne programy.",
     "err_port_missing": "Port {p} nie istnieje. Sprawdź połączenie adaptera.",
-    "err_elm_no_veh": "ELM327 podłączony, ale pojazd nie odpowiada. Sprawdź zapłon."
+    "err_elm_no_veh": "ELM327 podłączony, ale pojazd nie odpowiada. Sprawdź zapłon.",
+    "tab_stl": "Stellantis Specialist",
+    "stl_brand_lbl": "Marka:",
+    "stl_model_lbl": "Model:",
+    "stl_exec_btn": "Wykonaj",
+    "stl_confirm_title": "Potwierdzenie",
+    "stl_confirm_msg": "Czy na pewno chcesz wykonać ten tweak?",
+    "stl_warning": "UWAGA: Tryb Ekspert Stellantis. Tylko dla aut z szyną CAN.",
+    "stl_no_tweaks": "Brak dostępnych tweaków dla tego modelu.",
+    "stl_op_bc_unlock": "Odblokuj Statystyki BC (V, Olej, Temp)",
+    "stl_op_oil_reset": "Kasowanie Inspekcji Oleju (UDS)",
+    "stl_op_tpms": "Tryb Nauki TPMS",
+    "stl_op_needle": "Test Wskazówek (Inscenizacja)",
+    "stl_op_eco": "Wyłącz System ECO (Stop-Start)",
+    "stl_op_camera": "Aktywacja Kamery Cofania",
+    "stl_fi_srv_reset": "Reset Serwisowy (UDS)",
+    "stl_fi_dpf": "Wymuszenie Regeneracji DPF",
+    "stl_fi_proxy": "Procedura Proxi Alignment",
+    "stl_psa_mirror": "Składanie Lusterek przy Zamknięciu",
+    "stl_psa_drl": "Menu Świateł Dziennych (DRL) w Radiu"
 }
-

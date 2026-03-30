@@ -240,6 +240,24 @@
     "err_port_busy": "Port {p} is busy or does not exist. Check Device Manager.",
     "err_port_denied": "Permission denied for port {p}. Close other programs.",
     "err_port_missing": "Port {p} does not exist. Check adapter connection.",
-    "err_elm_no_veh": "ELM327 connected, but vehicle not responding. Check ignition."
+    "err_elm_no_veh": "ELM327 connected, but vehicle not responding. Check ignition.",
+    "tab_stl": "Stellantis Specialist",
+    "stl_brand_lbl": "Brand:",
+    "stl_model_lbl": "Model:",
+    "stl_exec_btn": "Execute",
+    "stl_confirm_title": "Confirm",
+    "stl_confirm_msg": "Are you sure you want to execute this tweak?",
+    "stl_warning": "CAUTION: Stellantis Expert Mode. CAN-bus models only.",
+    "stl_no_tweaks": "No tweaks available for this model.",
+    "stl_op_bc_unlock": "Unlock BC Statistics (V, Oil, Temp)",
+    "stl_op_oil_reset": "Oil Life Reset (UDS)",
+    "stl_op_tpms": "TPMS Learn Mode",
+    "stl_op_needle": "Needle Sweep (Staging)",
+    "stl_op_eco": "Disable ECO (Stop-Start)",
+    "stl_op_camera": "Rear Camera Activation",
+    "stl_fi_srv_reset": "Service Reset (UDS)",
+    "stl_fi_dpf": "Force DPF Regeneration",
+    "stl_fi_proxy": "Proxi Alignment Procedure",
+    "stl_psa_mirror": "Mirror Fold on Lock",
+    "stl_psa_drl": "DRL Menu in Radio"
 }
-

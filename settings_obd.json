@@ -7,8 +7,8 @@
     "alarm_enabled": true,
     "csv_interval": 0.2,
     "hud_mode": false,
-    "vehicle_type": null,
-    "fuel_type": null,
+    "vehicle_type": "ICE",
+    "fuel_type": "PETROL",
     "com_port": "AUTO",
     "baudrate": "38400",
     "alarms": {

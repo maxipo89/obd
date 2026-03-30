@@ -824,6 +824,42 @@ class OBDBackend:
             if was_looping:
                 self.is_connected_loop = True
 
+    def execute_uds_custom(self, commands: list, security_code: str = None) -> tuple[bool, str]:
+        """Wykonuje listę komend UDS z opcjonalnym kodem bezpieczeństwa."""
+        if not self.connection or not self.connection.is_connected():
+            return False, "Brak połączenia z interfejsem."
+        
+        interface = getattr(self.connection, 'interface', None)
+        if not interface:
+            return False, "Interfejs nie obsługuje surowych komend CAN."
+
+        was_looping = self.is_connected_loop
+        self.is_connected_loop = False
+        try:
+            # 1. Start Extended Diagnostic Session ($10 03)
+            # Domyślny Header dla CAN UDS. Powinien być konfigurowalny, ale dla większości Stellantis to 7E0/7E8 or similar.
+            # Wykorzystujemy 714 jako placeholder lub tryb auto jeśli interfejs na to pozwala.
+            interface.send_and_receive(b"AT SH 714") 
+            interface.send_and_receive(b"1003")
+            
+            if security_code:
+                # Mock Security Access
+                interface.send_and_receive(b"2701")
+                interface.send_and_receive(f"2702{security_code}".encode())
+
+            results = []
+            for cmd in commands:
+                resp = interface.send_and_receive(cmd.encode())
+                results.append(resp.decode() if isinstance(resp, bytes) else str(resp))
+                time.sleep(0.05)
+            
+            return True, " | ".join(results)
+        except Exception as e:
+            return False, str(e)
+        finally:
+            if was_looping:
+                self.is_connected_loop = True
+
     def load_zdc_file(self, filepath: str) -> tuple:
         """Parsuje plik .ZDC i zwraca listę komend HEX do wykonania.
 
@@ -937,6 +973,36 @@ class OBDApp(ctk.CTk):
                 {"id": "remotewindows", "name_key": "vag_tweak_remotewindows", "module": "09", "security": "31347", "commands": ["1003", "2E012601"]},
                 {"id": "puddlelights", "name_key": "vag_tweak_puddlelights", "module": "09", "security": "31347", "commands": ["1003", "2E012701"]}
             ]
+        }
+
+        self.STELLANTIS_TWEAKS_CONFIG = {
+            "Opel": {
+                "Astra J / Insignia A": [
+                    {"id": "opel_bc_unlock", "name_key": "stl_op_bc_unlock", "module": "IPC (0x244)", "commands": ["1003", "3B010101"]},
+                    {"id": "opel_oil_reset_uds", "name_key": "stl_op_oil_reset", "module": "ECM", "commands": ["1003", "2E02C601"]},
+                    {"id": "opel_tpms_learn", "name_key": "stl_op_tpms", "module": "BCM", "commands": ["1003", "31010001"]}
+                ],
+                "Astra K / Insignia B": [
+                    {"id": "opel_needle_uds", "name_key": "stl_op_needle", "module": "IPC", "commands": ["1003", "2E060D01"]},
+                    {"id": "opel_eco_off", "name_key": "stl_op_eco", "module": "BCM", "commands": ["1003", "2E010200"]}
+                ],
+                "Corsa E": [
+                    {"id": "opel_rev_camera", "name_key": "stl_op_camera", "module": "DISP", "commands": ["1003", "2E098201"]}
+                ]
+            },
+            "Fiat": {
+                "Tipo / 500X": [
+                    {"id": "fiat_srv_reset", "name_key": "stl_fi_srv_reset", "module": "BCM", "commands": ["1003", "31020004"]},
+                    {"id": "fiat_dpf_regen", "name_key": "stl_fi_dpf", "module": "ECM", "commands": ["1003", "31010005"]},
+                    {"id": "fiat_learn_proxy", "name_key": "stl_fi_proxy", "module": "BCM", "commands": ["1080", "1081", "31010203"]}
+                ]
+            },
+            "PSA (Peugeot/Citroen)": {
+                "308 / 508 / C4": [
+                    {"id": "psa_mirror_fold", "name_key": "stl_psa_mirror", "module": "BSI", "commands": ["1003", "2E013401"]},
+                    {"id": "psa_drl_menu", "name_key": "stl_psa_drl", "module": "BSI", "commands": ["1003", "2E054101"]}
+                ]
+            }
         }
         
         self.alarm_queue = queue.Queue()
@@ -1154,7 +1220,10 @@ class OBDApp(ctk.CTk):
         
         # Tab titles (Robust Dynamic localization)
         try:
-            titles = [texts["tab_live"], texts["tab_dtc"], texts["tab_vag"], texts["tab_logs"], texts["tab_settings"]]
+            titles = [
+                texts["tab_live"], texts["tab_dtc"], texts["tab_vag"], 
+                texts.get("tab_stl", "Stellantis"), texts["tab_logs"], texts["tab_settings"]
+            ]
             # Accessing the button widgets directly to change their visible text
             tab_buttons = list(self.tabview._segmented_button._buttons_dict.values())
             for i, btn in enumerate(tab_buttons):
@@ -1290,6 +1359,12 @@ class OBDApp(ctk.CTk):
             except Exception:
                 pass
 
+        # --- Stellantis Specialist tab live translations ---
+        for key, widget in getattr(self, "_stl_i18n_widgets", {}).items():
+            try:
+                widget.configure(text=texts.get(key, key))
+            except Exception: pass
+
         # Card Labels
         self.update_digital_indicators()
 
@@ -1302,6 +1377,7 @@ class OBDApp(ctk.CTk):
         self.tabview.add("Dashboard")
         self.tabview.add("Diagnostics")
         self.tabview.add("VAG Specialist")
+        self.tabview.add("Stellantis Specialist")
         self.tabview.add("Sessions")
         self.tabview.add("Settings")
         
@@ -1310,6 +1386,7 @@ class OBDApp(ctk.CTk):
         self._build_dashboard_tab()
         self._build_diagnostics_tab()
         self._build_vag_tab()
+        self._build_stellantis_tab()
         self._build_sessions_tab()
         self._build_settings_tab()
 
@@ -1576,220 +1653,183 @@ class OBDApp(ctk.CTk):
         self.dtc_text.configure(state="disabled")
 
     def _build_vag_tab(self):
+        """Buduje zakładkę VAG Specialist."""
         texts = LOCALIZATION[self.current_lang]
         tab = self.tabview.tab("VAG Specialist")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
 
-        # Storage for live language updates
-        self._vag_i18n_widgets = {}    # key -> widget (for single-label widgets)
-        self._vag_tweak_widgets = {}   # tweak_id -> {name_lbl, apply_btn, restore_btn, name_key}
-        self._vag_cat_labels = {}      # cat_key -> label
+        self._vag_i18n_widgets = {}
+        self._vag_tweak_widgets = {}
+        self._vag_cat_labels = {}
 
-        # Ostrzeżenie
         warn_frame = ctk.CTkFrame(tab, fg_color=("#FFE4C4", "#3d2b1f"), border_width=1, border_color=("#FF9900", "#ff8c00"))
         warn_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
-
         ctk.CTkLabel(warn_frame, text="⚠️ VAG SPECIALIST - EXPERT MODE", font=ctk.CTkFont(weight="bold"), text_color="#ff8c00").pack(pady=(5, 0))
         vag_warn_lbl = ctk.CTkLabel(warn_frame, text=texts["vag_warning_text"], font=ctk.CTkFont(size=11), wraplength=800)
         vag_warn_lbl.pack(pady=10, padx=20)
         self._vag_i18n_widgets["vag_warning_text"] = vag_warn_lbl
 
-        # Lista tweaków
         scroll = ctk.CTkScrollableFrame(tab, fg_color="transparent")
         scroll.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
         scroll.grid_columnconfigure(0, weight=1)
 
         row_idx = 0
         for cat_key, tweaks in self.VAG_TWEAKS_CONFIG.items():
-            # Header kategorii
-            cat_lbl = ctk.CTkLabel(scroll, text=texts.get(f"vag_category_{cat_key}", cat_key).upper(),
-                                   font=ctk.CTkFont(size=14, weight="bold"), text_color="#3a7ebf")
+            cat_lbl = ctk.CTkLabel(scroll, text=texts.get(f"vag_category_{cat_key}", cat_key).upper(), font=ctk.CTkFont(size=14, weight="bold"), text_color="#3a7ebf")
             cat_lbl.grid(row=row_idx, column=0, sticky="w", padx=15, pady=(15, 5))
             self._vag_cat_labels[cat_key] = cat_lbl
             row_idx += 1
-
             for t in tweaks:
                 t_frame = ctk.CTkFrame(scroll, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color=("#D0D0D5", "#2b2b3d"))
                 t_frame.grid(row=row_idx, column=0, sticky="ew", padx=10, pady=3)
                 t_frame.grid_columnconfigure(0, weight=1)
-
                 name = texts.get(t["name_key"], t["id"])
                 lbl = ctk.CTkLabel(t_frame, text=name, font=ctk.CTkFont(weight="bold"))
                 lbl.grid(row=0, column=0, sticky="w", padx=15, pady=10)
-
-                btn = ctk.CTkButton(t_frame, text=texts["vag_btn_apply"], width=140,
-                                    fg_color=("#14375E", "#1f538d"), hover_color=("#1F538D", "#3a7ebf"),
-                                    command=lambda tweak=t: self.action_execute_vag_tweak(tweak))
+                btn = ctk.CTkButton(t_frame, text=texts["vag_btn_apply"], width=140, fg_color=("#14375E", "#1f538d"), hover_color=("#1F538D", "#3a7ebf"), command=lambda tweak=t: self.action_execute_vag_tweak(tweak))
                 btn.grid(row=0, column=1, padx=10, pady=10)
-
-                # Przycisk przywracania
                 has_backup = self.backend.get_vag_backup(t["module"], t["commands"][-1][2:6]) is not None
-                btn_restore = ctk.CTkButton(t_frame, text=texts["vag_btn_restore"], width=140,
-                                            fg_color=("#D3D3D3", "#3d3d3d"), hover_color=("#A9A9A9", "#4d4d4d"),
-                                            state="normal" if has_backup else "disabled",
-                                            command=lambda tweak=t: self.action_restore_vag_tweak(tweak))
+                btn_restore = ctk.CTkButton(t_frame, text=texts["vag_btn_restore"], width=140, fg_color=("#D3D3D3", "#3d3d3d"), hover_color=("#A9A9A9", "#4d4d4d"), state="normal" if has_backup else "disabled", command=lambda tweak=t: self.action_restore_vag_tweak(tweak))
                 btn_restore.grid(row=0, column=2, padx=10, pady=10)
                 self.vag_restore_buttons[t["id"]] = btn_restore
-
-                # Store refs for live i18n
-                self._vag_tweak_widgets[t["id"]] = {
-                    "name_lbl": lbl, "apply_btn": btn, "restore_btn": btn_restore,
-                    "name_key": t["name_key"]
-                }
+                self._vag_tweak_widgets[t["id"]] = {"name_lbl": lbl, "apply_btn": btn, "restore_btn": btn_restore, "name_key": t["name_key"]}
                 row_idx += 1
 
-        # Expert Section at the bottom
         expert_frame = ctk.CTkFrame(tab, height=120)
         expert_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
-
         expert_desc_lbl = ctk.CTkLabel(expert_frame, text=texts["vag_expert_desc"], font=ctk.CTkFont(weight="bold"))
         expert_desc_lbl.grid(row=0, column=0, columnspan=4, pady=5)
         self._vag_i18n_widgets["vag_expert_desc"] = expert_desc_lbl
-
         expert_hdr_lbl = ctk.CTkLabel(expert_frame, text=texts["vag_header_lbl"])
         expert_hdr_lbl.grid(row=1, column=0, padx=5)
         self._vag_i18n_widgets["vag_header_lbl"] = expert_hdr_lbl
-
         self.vag_expert_header = ctk.CTkEntry(expert_frame, width=80, placeholder_text="714")
         self.vag_expert_header.grid(row=1, column=1, padx=5)
-
         expert_cmd_lbl = ctk.CTkLabel(expert_frame, text=texts["vag_command_lbl"])
         expert_cmd_lbl.grid(row=1, column=2, padx=5)
         self._vag_i18n_widgets["vag_command_lbl"] = expert_cmd_lbl
-
         self.vag_expert_cmd = ctk.CTkEntry(expert_frame, width=250, placeholder_text="2E 06 0D 01")
         self.vag_expert_cmd.grid(row=1, column=3, padx=5)
-
         self._vag_expert_send_btn = ctk.CTkButton(expert_frame, text=texts["vag_btn_send"], width=100, command=self.action_vag_send_hex)
         self._vag_expert_send_btn.grid(row=1, column=4, padx=10, pady=10)
         self._vag_i18n_widgets["vag_btn_send"] = self._vag_expert_send_btn
 
-        # --- PROTOCOL SELECTOR PANEL ---
         tab.grid_rowconfigure(3, weight=0)
         proto_frame = ctk.CTkFrame(tab, fg_color=("#E8E8EB", "#161623"), border_width=1, border_color=("#C8C8CC", "#2d2d44"), corner_radius=12)
         proto_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=(4, 4))
-
-        proto_hdr_lbl = ctk.CTkLabel(proto_frame, text=texts.get("vag_protocol_header", "đź”Ś VAG Protocol"), font=ctk.CTkFont(size=13, weight="bold"), text_color="#3a7ebf")
+        proto_hdr_lbl = ctk.CTkLabel(proto_frame, text=texts.get("vag_protocol_header", "🔧 VAG Protocol"), font=ctk.CTkFont(size=13, weight="bold"), text_color="#3a7ebf")
         proto_hdr_lbl.pack(side="left", padx=(16, 10), pady=10)
         self._vag_i18n_widgets["vag_protocol_header"] = proto_hdr_lbl
-
         self._vag_protocol_var = ctk.StringVar(value="UDS")
-        self._proto_uds_btn = ctk.CTkRadioButton(
-            proto_frame, text=texts.get("vag_proto_uds", "CAN UDS"), variable=self._vag_protocol_var,
-            value="UDS", font=ctk.CTkFont(size=12)
-        )
+        self._proto_uds_btn = ctk.CTkRadioButton(proto_frame, text=texts.get("vag_proto_uds", "CAN UDS"), variable=self._vag_protocol_var, value="UDS", font=ctk.CTkFont(size=12))
         self._proto_uds_btn.pack(side="left", padx=10, pady=10)
         self._vag_i18n_widgets["vag_proto_uds"] = self._proto_uds_btn
-
-        self._proto_tp2_btn = ctk.CTkRadioButton(
-            proto_frame, text=texts.get("vag_proto_tp20", "CAN TP2.0"), variable=self._vag_protocol_var,
-            value="TP20", font=ctk.CTkFont(size=12), text_color="#ff9900"
-        )
+        self._proto_tp2_btn = ctk.CTkRadioButton(proto_frame, text=texts.get("vag_proto_tp20", "CAN TP2.0"), variable=self._vag_protocol_var, value="TP20", font=ctk.CTkFont(size=12), text_color="#ff9900")
         self._proto_tp2_btn.pack(side="left", padx=10, pady=10)
         self._vag_i18n_widgets["vag_proto_tp20"] = self._proto_tp2_btn
 
-        # --- ZDC DATASET LOADER PANEL ---
         tab.grid_rowconfigure(4, weight=0)
         zdc_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color=("#FF9900", "#ff8c00"), corner_radius=12)
         zdc_frame.grid(row=4, column=0, sticky="ew", padx=20, pady=(4, 12))
-
-        zdc_hdr_lbl = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_section_header", "đź“‚ Dataset Loader"), font=ctk.CTkFont(size=13, weight="bold"), text_color="#ff8c00")
+        zdc_hdr_lbl = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_section_header", "📁 Dataset Loader"), font=ctk.CTkFont(size=13, weight="bold"), text_color="#ff8c00")
         zdc_hdr_lbl.grid(row=0, column=0, sticky="w", padx=15, pady=(10, 4), columnspan=5)
         self._vag_i18n_widgets["zdc_section_header"] = zdc_hdr_lbl
-
         zdc_mod_lbl = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_module_label", "Module:"))
         zdc_mod_lbl.grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
         self._vag_i18n_widgets["zdc_module_label"] = zdc_mod_lbl
-
         self.zdc_module_entry = ctk.CTkEntry(zdc_frame, width=60, placeholder_text="01")
         self.zdc_module_entry.grid(row=1, column=1, padx=5, pady=8)
-
         self._zdc_filepath = ctk.StringVar(value="")
         self.zdc_file_lbl = ctk.CTkLabel(zdc_frame, textvariable=self._zdc_filepath, text_color="#aaaaaa", width=320, anchor="w")
         self.zdc_file_lbl.grid(row=1, column=2, padx=10, pady=8, sticky="ew")
-
-        self._zdc_browse_btn = ctk.CTkButton(
-            zdc_frame, text=texts.get("zdc_choose_file", "đź“ Choose ZDC"), width=150,
-            fg_color="#2a3a50", hover_color="#3a7ebf",
-            command=self._action_zdc_browse
-        )
+        self._zdc_browse_btn = ctk.CTkButton(zdc_frame, text=texts.get("zdc_choose_file", "📁 Choose ZDC"), width=150, fg_color="#2a3a50", hover_color="#3a7ebf", command=self._action_zdc_browse)
         self._zdc_browse_btn.grid(row=1, column=3, padx=8, pady=8)
         self._vag_i18n_widgets["zdc_choose_file"] = self._zdc_browse_btn
-
-        self._zdc_load_btn = ctk.CTkButton(
-            zdc_frame, text=texts.get("zdc_upload", "â¬†ď¸Ź Upload Dataset"), width=140,
-            fg_color="#8B3A1E", hover_color="#5C1F0A",
-            font=ctk.CTkFont(weight="bold"),
-            command=self._action_zdc_load
-        )
+        self._zdc_load_btn = ctk.CTkButton(zdc_frame, text=texts.get("zdc_upload", "⬆️ Upload Dataset"), width=140, fg_color="#8B3A1E", hover_color="#5C1F0A", font=ctk.CTkFont(weight="bold"), command=self._action_zdc_load)
         self._zdc_load_btn.grid(row=1, column=4, padx=(4, 15), pady=8)
         self._vag_i18n_widgets["zdc_upload"] = self._zdc_load_btn
 
-    def action_restore_vag_tweak(self, tweak):
+    def _build_stellantis_tab(self):
+        """Buduje zakładkę Stellantis Specialist."""
         texts = LOCALIZATION[self.current_lang]
-        if not messagebox.askyesno(texts.get("tab_vag", "VAG Specialist"), texts["vag_restore_confirm"]):
-            return
-            
-        did = tweak["commands"][-1][2:6]
-        sec = tweak.get("security")
-        
-        success, msg = self.backend.execute_vag_restore(tweak["module"], did, sec)
-        if success:
-            # Dezaktywuj przycisk przywracania po udanym powrocie do oryginału
-            if tweak["id"] in self.vag_restore_buttons:
-                self.vag_restore_buttons[tweak["id"]].configure(state="disabled")
-            messagebox.showinfo(texts.get("tab_vag", "VAG Specialist"), texts["vag_restore_success"])
-        else:
-            messagebox.showerror(texts.get("tab_vag", "VAG Specialist"), f"{texts['vag_error']}\n{msg}")
+        tab = self.tabview.tab("Stellantis Specialist")
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(2, weight=1)
 
-    def action_execute_vag_tweak(self, tweak):
+        self._stl_i18n_widgets = {}
+
+        # 1. Nagłówek i Selektory
+        header_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
+
+        brand_lbl = ctk.CTkLabel(header_frame, text=texts.get("stl_brand_lbl", "Marka:"), font=ctk.CTkFont(weight="bold"))
+        brand_lbl.pack(side="left", padx=5)
+        self._stl_i18n_widgets["stl_brand_lbl"] = brand_lbl
+
+        self.stl_brand_menu = ctk.CTkOptionMenu(header_frame, values=list(self.STELLANTIS_TWEAKS_CONFIG.keys()), command=self._on_stl_brand_changed)
+        self.stl_brand_menu.pack(side="left", padx=10)
+
+        model_lbl = ctk.CTkLabel(header_frame, text=texts.get("stl_model_lbl", "Model:"), font=ctk.CTkFont(weight="bold"))
+        model_lbl.pack(side="left", padx=5)
+        self._stl_i18n_widgets["stl_model_lbl"] = model_lbl
+
+        self.stl_model_menu = ctk.CTkOptionMenu(header_frame, values=["-"], command=self._on_stl_model_changed)
+        self.stl_model_menu.pack(side="left", padx=10)
+
+        # 2. Ostrzeżenie
+        warn_frame = ctk.CTkFrame(tab, fg_color=("#FFE4C4", "#3d2b1f"), border_width=1, border_color=("#FF9900", "#ff8c00"))
+        warn_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=5)
+        self.stl_warn_lbl = ctk.CTkLabel(warn_frame, text=texts.get("stl_warning", "UWAGA: Tryb Ekspert Stellantis. Tylko dla aut z szyną CAN."), font=ctk.CTkFont(size=11), wraplength=800)
+        self.stl_warn_lbl.pack(pady=10, padx=20)
+        self._stl_i18n_widgets["stl_warning"] = self.stl_warn_lbl
+
+        # 3. Lista Tweaków (Scrollable)
+        self.stl_tweak_scroll = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+        self.stl_tweak_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
+        
+        # Inicjalizacja listy modeli
+        self._on_stl_brand_changed(self.stl_brand_menu.get())
+
+    def _on_stl_brand_changed(self, brand):
+        models = list(self.STELLANTIS_TWEAKS_CONFIG.get(brand, {}).keys())
+        if not models: models = ["-"]
+        self.stl_model_menu.configure(values=models)
+        self.stl_model_menu.set(models[0])
+        self._on_stl_model_changed(models[0])
+
+    def _on_stl_model_changed(self, model):
+        for child in self.stl_tweak_scroll.winfo_children():
+            child.destroy()
+        brand = self.stl_brand_menu.get()
+        tweaks = self.STELLANTIS_TWEAKS_CONFIG.get(brand, {}).get(model, [])
+        texts = LOCALIZATION[self.current_lang]
+        if not tweaks:
+            ctk.CTkLabel(self.stl_tweak_scroll, text=texts.get("stl_no_tweaks", "Brak dostępnych tweaków dla tego modelu.")).pack(pady=20)
+            return
+        for tweak in tweaks:
+            f = ctk.CTkFrame(self.stl_tweak_scroll, corner_radius=10, border_width=1, border_color="#45456b", fg_color="#1a1a2e")
+            f.pack(fill="x", padx=10, pady=5)
+            lbl_name = ctk.CTkLabel(f, text=texts.get(tweak["name_key"], tweak["id"]), font=ctk.CTkFont(weight="bold"))
+            lbl_name.pack(side="left", padx=15, pady=12)
+            lbl_mod = ctk.CTkLabel(f, text=f"({tweak['module']})", font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
+            lbl_mod.pack(side="left", padx=2)
+            btn = ctk.CTkButton(f, text=texts.get("stl_exec_btn", "Wykonaj"), width=100, command=lambda t=tweak: self._execute_stl_tweak(t))
+            btn.pack(side="right", padx=15, pady=10)
+
+    def _execute_stl_tweak(self, tweak):
         texts = LOCALIZATION[self.current_lang]
         if not self.backend.connection or not self.backend.connection.is_connected():
-            messagebox.showwarning(texts["err_title"], texts["err_no_conn_msg"])
+            messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
             return
-            
-        if not messagebox.askyesno(texts["vag_warning_title"], texts["vag_warning_text"]):
+        name = texts.get(tweak["name_key"], tweak["id"])
+        if not messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_confirm_msg", "Czy na pewno chcesz wykonać ten tweak?") + f"\n\n{name}"):
             return
-
-        # Route to appropriate protocol backend
-        proto = getattr(self, "_vag_protocol_var", None)
-        use_tp20 = proto and proto.get() == "TP20"
-
-        if use_tp20:
-            success, results = self.backend.execute_vag_tp20_command(
-                tweak["module"], tweak["commands"], tweak.get("security")
-            )
+        ok, res = self.backend.execute_uds_custom(tweak["commands"], tweak.get("security"))
+        if ok:
+            messagebox.showinfo("Sukces", f"{name}: WYKONANO\n{res}")
         else:
-            success, results = self.backend.execute_vag_command(
-                tweak["module"], tweak["commands"], tweak.get("security")
-            )
-
-        if success:
-            # Odblokuj przycisk przywracania od razu po udanym kodowaniu
-            if tweak["id"] in self.vag_restore_buttons:
-                self.vag_restore_buttons[tweak["id"]].configure(state="normal")
-            proto_label = " [TP2.0]" if use_tp20 else " [UDS]"
-            messagebox.showinfo(texts.get("tab_vag", "VAG Specialist"), f"{texts['vag_success']}{proto_label}\n\nRaw Resp: {results}")
-        else:
-            messagebox.showerror(texts.get("tab_vag", "VAG Specialist"), f"{texts['vag_error']}\n\nDetail: {results}")
-
-    def action_vag_send_hex(self):
-        texts = LOCALIZATION[self.current_lang]
-        header = self.vag_expert_header.get()
-        cmd = self.vag_expert_cmd.get()
-        if not header or not cmd: return
-        
-        proto = getattr(self, "_vag_protocol_var", None)
-        use_tp20 = proto and proto.get() == "TP20"
-        if use_tp20:
-            success, results = self.backend.execute_vag_tp20_command(header, [cmd])
-        else:
-            success, results = self.backend.execute_vag_command(header, [cmd])
-        if success:
-            messagebox.showinfo(texts.get("vag_expert_desc", "Expert Result"), f"RESP: {results}")
-        else:
-            messagebox.showerror(texts.get("vag_expert_desc", "Expert Error"), f"ERR: {results}")
+            messagebox.showerror("Błąd", f"{name}: NIEPOWODZENIE\n{res}")
 
     def _action_zdc_browse(self):
         """Open file dialog to select a .ZDC dataset file."""
