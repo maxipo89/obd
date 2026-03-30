@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Backups & Logs
+*.bak*
+*.encoding_backup
+*.csv
+line*_hex.txt
+*.py.old
+
+# IDE
+.vscode/
+.idea/
+
+# PyInstaller / Build
+build/
+dist/
+*.spec
