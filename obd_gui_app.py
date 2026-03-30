@@ -1831,6 +1831,67 @@ class OBDApp(ctk.CTk):
         else:
             messagebox.showerror("Błąd", f"{name}: NIEPOWODZENIE\n{res}")
 
+    def action_execute_vag_tweak(self, tweak):
+        texts = LOCALIZATION[self.current_lang]
+        if not self.backend.connection or not self.backend.connection.is_connected():
+            messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
+            return
+        
+        name = texts.get(tweak["name_key"], tweak["id"])
+        if not messagebox.askyesno(texts.get("vag_tweak_confirm_title", "Potwierdzenie"), texts.get("vag_tweak_confirm_msg", "Czy na pewno chcesz wykonać ten tweak?") + f"\n\n{name}"):
+            return
+            
+        # Wykonaj komendę (TP2.0 dla większości z listy)
+        ok, res = self.backend.execute_vag_tp20_command(tweak["module"], tweak["commands"], tweak.get("security"))
+        
+        if ok:
+            messagebox.showinfo(texts.get("success", "Sukces"), f"{name}: {texts.get('vag_tweak_applied', 'Tweak zastosowany!')}\n{res}")
+            # Aktywuj przycisk przywracania
+            if tweak["id"] in self.vag_restore_buttons:
+                self.vag_restore_buttons[tweak["id"]].configure(state="normal")
+        else:
+            messagebox.showerror(texts.get("err_title", "Błąd"), f"{name}: {texts.get('vag_tweak_error', 'Błąd podczas kodowania.')}\n{res}")
+
+    def action_restore_vag_tweak(self, tweak):
+        texts = LOCALIZATION[self.current_lang]
+        if not self.backend.connection or not self.backend.connection.is_connected():
+            messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
+            return
+            
+        did = tweak["commands"][-1][2:6]
+        name = texts.get(tweak["name_key"], tweak["id"])
+        
+        if not messagebox.askyesno(texts.get("vag_tweak_confirm_title", "Potwierdzenie"), texts.get("vag_restore_confirm_msg", "Czy przywrócić ustawienia fabryczne?") + f"\n\n{name}"):
+            return
+
+        ok, res = self.backend.execute_vag_restore(tweak["module"], did, tweak.get("security"))
+        if ok:
+            messagebox.showinfo(texts.get("success", "Sukces"), f"{name}: {texts.get('vag_tweak_restored', 'Przywrócono oryginał!')}\n{res}")
+        else:
+            messagebox.showerror(texts.get("err_title", "Błąd"), f"{name}: {res}")
+
+    def action_vag_send_hex(self):
+        texts = LOCALIZATION[self.current_lang]
+        if not self.backend.connection or not self.backend.connection.is_connected():
+            messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
+            return
+            
+        header = self.vag_expert_header.get().strip() or "714"
+        cmd = self.vag_expert_cmd.get().strip()
+        if not cmd: return
+        
+        proto = self._vag_protocol_var.get()
+        if proto == "TP20":
+            ok, res = self.backend.execute_vag_tp20_command(header, [cmd])
+        else:
+            # UDS custom handle
+            ok, res = self.backend.execute_uds_custom([cmd])
+            
+        if ok:
+            messagebox.showinfo(texts.get("success", "Sukces"), res)
+        else:
+            messagebox.showerror(texts.get("err_title", "Błąd"), res)
+
     def _action_zdc_browse(self):
         """Open file dialog to select a .ZDC dataset file."""
         texts = LOCALIZATION[self.current_lang]
