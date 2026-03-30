@@ -1038,6 +1038,10 @@ class OBDApp(ctk.CTk):
                     {"id": "alfa_race", "name_key": "stl_alfa_dyn", "module": "BCM", "commands": ["1003", "2E054501"]},
                     {"id": "alfa_seatbelt", "name_key": "stl_alfa_seatbelt", "module": "IPC", "commands": ["1003", "2E033100"]},
                     {"id": "alfa_logo", "name_key": "stl_alfa_logo", "module": "ETM", "commands": ["1003", "2E098402"]}
+                ],
+                "MiTo": [
+                    {"id": "alfa_mito_needle", "name_key": "stl_alfa_mito_needle", "module": "IPC", "commands": ["1003", "2E060D01"]},
+                    {"id": "alfa_mito_fog", "name_key": "stl_alfa_mito_fog", "module": "BCM", "commands": ["1003", "2E054201"]}
                 ]
             },
             "Jeep": {
@@ -1045,6 +1049,38 @@ class OBDApp(ctk.CTk):
                     {"id": "jeep_drl", "name_key": "stl_jeep_drl", "module": "BCM", "commands": ["1003", "2E023101"]},
                     {"id": "jeep_horn", "name_key": "stl_jeep_horn", "module": "BCM", "commands": ["1003", "2E012401"]},
                     {"id": "jeep_offroad", "name_key": "stl_jeep_offroad", "module": "RADIO", "commands": ["1003", "2E0CC201"]}
+                ]
+            },
+            "Dodge": {
+                "Challenger / Charger": [
+                    {"id": "dg_srt_pages", "name_key": "stl_dg_srt", "module": "7E0", "commands": ["1003", "2E010A01"]},
+                    {"id": "dg_drl_turn", "name_key": "stl_dg_drl", "module": "7A6", "commands": ["1003", "2E023402"]},
+                    {"id": "dg_belt_chime", "name_key": "stl_dg_belt", "module": "7A0", "commands": ["1003", "2E033100"]}
+                ]
+            },
+            "RAM": {
+                "1500 / 2500": [
+                    {"id": "ram_trailer", "name_key": "stl_ram_trailer", "module": "7A6", "commands": ["1003", "2E054401"]},
+                    {"id": "ram_cargo", "name_key": "stl_ram_cargo", "module": "7E0", "commands": ["1003", "2E0CC401"]},
+                    {"id": "ram_fold", "name_key": "stl_ram_fold", "module": "7A6", "commands": ["1003", "2E012801"]}
+                ]
+            },
+            "DS Automobiles": {
+                "DS 7 / DS 3": [
+                    {"id": "ds_ambient", "name_key": "stl_ds_ambient", "module": "BSI", "commands": ["1003", "2E014502"]},
+                    {"id": "ds_matrix", "name_key": "stl_ds_matrix", "module": "BSI", "commands": ["1003", "2E067101"]}
+                ]
+            },
+            "Maserati": {
+                "Ghibli / Levante": [
+                    {"id": "mas_valves", "name_key": "stl_mas_valves", "module": "7E0", "commands": ["1003", "2E010F01"]},
+                    {"id": "mas_stopstart", "name_key": "stl_mas_stopstart", "module": "7A6", "commands": ["1003", "2E011200"]}
+                ]
+            },
+            "Lancia": {
+                "Ypsilon / Delta": [
+                    {"id": "lan_city", "name_key": "stl_lan_city", "module": "7A6", "commands": ["1003", "2E054801"]},
+                    {"id": "lan_srv", "name_key": "stl_lan_srv", "module": "7A6", "commands": ["1003", "31020004"]}
                 ]
             }
         }
@@ -1408,7 +1444,14 @@ class OBDApp(ctk.CTk):
             try:
                 widget.configure(text=texts.get(key, key))
             except Exception: pass
-        # Refresh Stellantis tweak list to update names and buttons
+        # Update per-tweak buttons and labels
+        for tweak_id, refs in getattr(self, "_stl_tweak_widgets", {}).items():
+            try:
+                refs["name_lbl"].configure(text=texts.get(refs["name_key"], tweak_id))
+                refs["apply_btn"].configure(text=texts.get("stl_btn_apply", "Apply"))
+                refs["restore_btn"].configure(text=texts.get("stl_btn_restore", "Restore"))
+            except Exception: pass
+        # Refresh Stellantis tweak list to update states if needed
         try:
             self._on_stl_model_changed(self.stl_model_menu.get())
         except Exception: pass
@@ -1736,7 +1779,9 @@ class OBDApp(ctk.CTk):
                 lbl = ctk.CTkLabel(t_frame, text=name, font=ctk.CTkFont(weight="bold"))
                 lbl.grid(row=0, column=0, sticky="w", padx=15, pady=10)
                 # Restore button first (left)
-                has_backup = self.backend.get_vag_backup(t["module"], t["commands"][-1][2:6]) is not None
+                last_cmd = str(t["commands"][-1]) if t["commands"] else ""
+                did = last_cmd[2:6] if last_cmd.startswith("2E") else "0000"
+                has_backup = self.backend.get_vag_backup(t["module"], did) is not None
                 btn_restore = ctk.CTkButton(t_frame, text=texts["vag_btn_restore"], width=140, fg_color="#5F1E1E", hover_color="#8B1E1E", state="normal" if has_backup else "disabled", command=lambda tweak=t: self.action_restore_vag_tweak(tweak))
                 btn_restore.grid(row=0, column=1, padx=10, pady=10)
                 
@@ -1809,6 +1854,8 @@ class OBDApp(ctk.CTk):
         tab.grid_rowconfigure(2, weight=1)
 
         self._stl_i18n_widgets = {}
+        self._stl_tweak_widgets = {}
+        self.stl_restore_buttons = {}
 
         # 1. Nagłówek i Selektory
         header_frame = ctk.CTkFrame(tab, fg_color="transparent")
@@ -1944,11 +1991,33 @@ class OBDApp(ctk.CTk):
             lbl_name.pack(side="left", padx=15, pady=12)
             lbl_mod = ctk.CTkLabel(f, text=f"({tweak['module']})", font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
             lbl_mod.pack(side="left", padx=2)
+            
+            # Check for backup to set restore button state
+            did_to_check = ""
+            for cmd_raw in reversed(tweak.get("commands", [])):
+                cmd_str = str(cmd_raw).replace(" ","")
+                if cmd_str.startswith("2E") and len(cmd_str) >= 6:
+                    did_to_check = cmd_str[2:6]; break
+            
+            has_backup = False
+            if did_to_check:
+                # Use UDS header mapping for search
+                hdr = "714"
+                m_str = str(tweak.get("module", ""))
+                if "ECM" in m_str: hdr = "7E0"
+                elif "BCM" in m_str or "BSI" in m_str: hdr = "7A6"
+                elif "IPC" in m_str: hdr = "7A0"
+                elif len(m_str) == 3 and m_str.isalnum(): hdr = m_str
+                has_backup = self.backend.get_vag_backup(hdr, did_to_check) is not None
+            
             btn_apply = ctk.CTkButton(f, text=texts.get("stl_btn_apply", "Wykonaj"), width=100, fg_color="#1E3A5F", command=lambda t=tweak: self._execute_stl_tweak(t))
             btn_apply.pack(side="right", padx=10, pady=10)
             
-            btn_restore = ctk.CTkButton(f, text=texts.get("stl_btn_restore", "Przywróć"), width=100, fg_color="#5F1E1E", command=lambda t=tweak: self._restore_stl_tweak(t))
+            btn_restore = ctk.CTkButton(f, text=texts.get("stl_btn_restore", "Przywróć"), width=100, fg_color="#5F1E1E", state="normal" if has_backup else "disabled", command=lambda t=tweak: self._restore_stl_tweak(t))
             btn_restore.pack(side="right", padx=5, pady=10)
+            
+            self.stl_restore_buttons[tweak["id"]] = btn_restore
+            self._stl_tweak_widgets[tweak["id"]] = {"name_lbl": lbl_name, "apply_btn": btn_apply, "restore_btn": btn_restore, "name_key": tweak["name_key"]}
 
     def _execute_stl_tweak(self, tweak):
         texts = LOCALIZATION[self.current_lang]
@@ -1956,30 +2025,45 @@ class OBDApp(ctk.CTk):
             ok, res = self.backend.execute_uds_custom(tweak["module"], tweak["commands"])
             if ok:
                 messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_applied", "Tweak zastosowany!"))
+                # Enable restore button if it was disabled
+                if tweak["id"] in self.stl_restore_buttons:
+                    self.stl_restore_buttons[tweak["id"]].configure(state="normal")
             else:
                 messagebox.showerror(texts.get("err_title", "Błąd"), f"{texts.get('stl_tweak_error', 'Błąd')}: {res}")
 
     def _restore_stl_tweak(self, tweak):
         texts = LOCALIZATION[self.current_lang]
         if messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_restore_confirm_msg", "Przywrócić oryginał?")):
-            # is_restore=True tells execute_uds_custom NOT to try to read/backup again
-            ok, res = self.backend.execute_uds_custom(tweak["module"], tweak["commands"], is_restore=True)
+            # Find DID
+            did_to_restore = ""
+            for cmd_raw in reversed(tweak.get("commands", [])):
+                cmd_str = str(cmd_raw).replace(" ","")
+                if cmd_str.startswith("2E") and len(cmd_str) >= 6:
+                    did_to_restore = cmd_str[2:6]; break
+            
+            if not did_to_restore:
+                messagebox.showerror(texts.get("err_title", "Błąd"), "Nie można określić identyfikatora DID dla przywracania.")
+                return
+
+            # Resolve header
+            hdr = "714"
+            m_str = str(tweak.get("module", ""))
+            if "ECM" in m_str: hdr = "7E0"
+            elif "BCM" in m_str or "BSI" in m_str: hdr = "7A6"
+            elif "IPC" in m_str: hdr = "7A0"
+            elif len(m_str) == 3 and m_str.isalnum(): hdr = m_str
+
+            orig_val = self.backend.get_vag_backup(hdr, did_to_restore)
+            if not orig_val:
+                messagebox.showerror(texts.get("err_title", "Błąd"), texts.get("stl_no_backup", "Brak kopii zapasowej dla tego modułu!"))
+                return
+
+            restore_cmd = f"2E{did_to_restore}{orig_val}"
+            ok, res = self.backend.execute_uds_custom(hdr, ["1003", restore_cmd], is_restore=True)
             if ok:
                 messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_restored", "Przywrócono!"))
             else:
                 messagebox.showerror(texts.get("err_title", "Błąd"), res)
-        texts = LOCALIZATION[self.current_lang]
-        if not self.backend.connection or not self.backend.connection.is_connected():
-            messagebox.showwarning(texts["err_no_conn"], texts["err_no_conn_msg"])
-            return
-        name = texts.get(tweak["name_key"], tweak["id"])
-        if not messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_confirm_msg", "Czy na pewno chcesz wykonać ten tweak?") + f"\n\n{name}"):
-            return
-        ok, res = self.backend.execute_uds_custom(tweak["commands"], tweak.get("security"))
-        if ok:
-            messagebox.showinfo("Sukces", f"{name}: WYKONANO\n{res}")
-        else:
-            messagebox.showerror("Błąd", f"{name}: NIEPOWODZENIE\n{res}")
 
     def action_execute_vag_tweak(self, tweak):
         texts = LOCALIZATION[self.current_lang]
