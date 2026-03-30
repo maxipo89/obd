@@ -1735,11 +1735,14 @@ class OBDApp(ctk.CTk):
                 name = texts.get(t["name_key"], t["id"])
                 lbl = ctk.CTkLabel(t_frame, text=name, font=ctk.CTkFont(weight="bold"))
                 lbl.grid(row=0, column=0, sticky="w", padx=15, pady=10)
-                btn = ctk.CTkButton(t_frame, text=texts["vag_btn_apply"], width=140, fg_color=("#14375E", "#1f538d"), hover_color=("#1F538D", "#3a7ebf"), command=lambda tweak=t: self.action_execute_vag_tweak(tweak))
-                btn.grid(row=0, column=1, padx=10, pady=10)
+                # Restore button first (left)
                 has_backup = self.backend.get_vag_backup(t["module"], t["commands"][-1][2:6]) is not None
-                btn_restore = ctk.CTkButton(t_frame, text=texts["vag_btn_restore"], width=140, fg_color=("#D3D3D3", "#3d3d3d"), hover_color=("#A9A9A9", "#4d4d4d"), state="normal" if has_backup else "disabled", command=lambda tweak=t: self.action_restore_vag_tweak(tweak))
-                btn_restore.grid(row=0, column=2, padx=10, pady=10)
+                btn_restore = ctk.CTkButton(t_frame, text=texts["vag_btn_restore"], width=140, fg_color="#5F1E1E", hover_color="#8B1E1E", state="normal" if has_backup else "disabled", command=lambda tweak=t: self.action_restore_vag_tweak(tweak))
+                btn_restore.grid(row=0, column=1, padx=10, pady=10)
+                
+                # Apply button last (right)
+                btn = ctk.CTkButton(t_frame, text=texts["vag_btn_apply"], width=140, fg_color="#1E3A5F", hover_color="#2a4a75", command=lambda tweak=t: self.action_execute_vag_tweak(tweak))
+                btn.grid(row=0, column=2, padx=10, pady=10)
                 self.vag_restore_buttons[t["id"]] = btn_restore
                 self._vag_tweak_widgets[t["id"]] = {"name_lbl": lbl, "apply_btn": btn, "restore_btn": btn_restore, "name_key": t["name_key"]}
                 row_idx += 1
