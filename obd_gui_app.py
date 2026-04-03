@@ -1511,10 +1511,6 @@ class OBDApp(ctk.CTk):
             
             if new_state: # Zaznaczono nowy wykres
                 if key not in self.active_graphs:
-                    if len(self.active_graphs) >= 3:
-                        # Zamiana: usuwamy najstarszy, dodajemy nowy
-                        old_key = self.active_graphs.pop(0)
-                        self.graph_vars[old_key].set(False)
                     self.active_graphs.append(key)
             else: # Odznaczono wykres
                 if key in self.active_graphs:
@@ -1626,7 +1622,7 @@ class OBDApp(ctk.CTk):
 
         # --- WYKRESY (Matplotlib) W ZAKĹADCE ---
 
-        self.graph_frame = ctk.CTkFrame(tab, corner_radius=10, fg_color="transparent")
+        self.graph_frame = ctk.CTkScrollableFrame(tab, corner_radius=10, fg_color="transparent")
         self.graph_frame.grid(row=3, column=0, sticky="nsew", padx=10, pady=5)
         
         bg_color = "#F0F0F0" if ctk.get_appearance_mode() == "Light" else "#2b2b2b"
@@ -1636,24 +1632,32 @@ class OBDApp(ctk.CTk):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.configure(borderwidth=0, highlightthickness=0)
-        self.canvas_widget.pack(fill="both", expand=True, pady=0)
+        self.canvas_widget.pack(fill="x", expand=False, pady=0)
         
         # Responsywność: przelicz layout po każdej zmianie rozmiaru okna
         def _on_resize(event=None):
             try:
-                # Pobierz aktualne wymiary kontenera
-                w = self.graph_frame.winfo_width()
-                h = self.graph_frame.winfo_height()
+                # Mierzymy szerokość z zewnętrznego taba, bo CTkScrollableFrame.winfo_width()
+                # zwraca nieprawidłową wartość wewnątrz scrollable frame
+                w = tab.winfo_width() - 55  # margines na scrollbar + paddingi
+                active_count = max(1, len(self.active_graphs))
                 
-                if w > 10 and h > 10:
+                # Każdy wykres ma 250px wysokości, minimum 350px
+                h = max(350, active_count * 250)
+                
+                if w > 50:
                     dpi = self.fig.get_dpi()
-                    # Ustaw rozmiar figury tak, aby wypełniała cały dostępny obszar
                     self.fig.set_size_inches(w / dpi, h / dpi, forward=True)
+                    # Ustaw rozmiar canvas widgetu zgodnie z figurą
+                    try:
+                        self.canvas_widget.configure(width=w, height=h)
+                    except: pass
                     self.canvas.draw_idle()
             except Exception:
                 pass
         
-        self.graph_frame.bind("<Configure>", _on_resize)
+        # Bind do tab (zewnętrzny kontener) - on dostaje poprawne wymiary po resize okna
+        tab.bind("<Configure>", _on_resize, add="+")
         self._on_resize_ref = _on_resize
         
         # FuncAnimation przeniesione na koniec __init__ by nie blokowało UI
@@ -3001,24 +3005,53 @@ class OBDApp(ctk.CTk):
             self.replay_pause_btn.configure(text="▶")
             # --------------------------------------------
             
-            # 4. Synchronizacja stanu GUI z logiem (1:1)
+            # 4. Synchronizacja stanu GUI z logiem (1:1) + natychmiastowe zaladowanie danych
             if self.backend.replay_data:
                 row0 = self.backend.replay_data[0]
+                
+                # Zaladuj wartosci pierwszej klatki natychmiast do backend.current i history
+                # dzieki temu wskazniki i wykresy nie czekaja na watek replay
+                try:
+                    num_keys = [
+                        "rpm", "speed", "temp", "maf", "load", "throttle",
+                        "trans_temp", "hev_soc", "hev_volts", "hev_power",
+                        "voltage_12v", "mpg"
+                    ]
+                    # Update current values
+                    self.backend.current.update({
+                        k: float(row0.get(k, 0) or 0) for k in num_keys
+                    })
+                    self.backend.current["replayed_graphs"] = row0.get("active_graphs", "")
+                    
+                    # Fill history so graphs have data immediately
+                    with self.backend.data_lock:
+                        self.backend.x_data.clear()
+                        for v in self.backend.history.values():
+                            v.clear()
+                        
+                        self.backend.x_data.append(float(row0.get("time", 0)))
+                        for k in num_keys:
+                            self.backend.history[k].append(self.backend.current[k])
+                except Exception:
+                    pass
+                
+                # Synchronizacja aktywnych wykresow z pierwszej klatki
                 rec_graphs_val = row0.get("active_graphs", "")
                 if rec_graphs_val and isinstance(rec_graphs_val, str):
                     rec_list = [g.strip() for g in rec_graphs_val.split(",") if g.strip()]
                     if rec_list:
-                        self.active_graphs = rec_list[:3]
+                        self.active_graphs = rec_list
                         for k, var in self.graph_vars.items():
                             var.set(k in self.active_graphs)
                         if hasattr(self, '_on_resize_ref'):
                             self._on_resize_ref()
             
-            # 5. Przygotowanie osi czasu i markerów (już teraz!)
+            # 5. Przygotowanie osi czasu i markerow
             self._precompute_replay_alarms(self.alarm_configs, self.alarm_enabled)
             self._draw_replay_markers()
             
-            # 6. Pokaż pierwszą klatkę danych natychmiast
+            # 6. Pokaz pierwsza klatke danych natychmiast
+            self._needs_layout = True
             self.update_digital_indicators()
             if hasattr(self, 'canvas'):
                 self.update_graphs(None)
@@ -3038,6 +3071,9 @@ class OBDApp(ctk.CTk):
         # Zsynchronizuj bazę czasu przed startem, by uniknąć fly-through (skoku do przodu)
         self._replay_sync_time_base()
         self.backend.is_replay_paused = False
+        
+        # Ustaw ikone przycisku na pause (bo replay teraz gra)
+        self.replay_pause_btn.configure(text="⏸")
         
         self._current_override = None
         self.update_mode_status()
@@ -3197,129 +3233,119 @@ class OBDApp(ctk.CTk):
             btn.configure(state=state)
         # Przycisk nagrywania (zawsze wyłączony podczas Replay)
         if hasattr(self, "logging_btn"):
-            self.logging_btn.configure(state="disabled" if not enabled else "disabled") # Domyślnie zostaw wyłączony po Replay, dopóki nie ma połączenia
-            # Korekta: Jeśli włączamy interaktywność, przywróć stan przycisku logowania zależnie od połączenia
+            self.logging_btn.configure(state="disabled" if not enabled else "disabled")
             if enabled:
                 self.logging_btn.configure(state="normal" if self.backend.is_connected_loop and not self.backend.is_replay else "disabled")
             else:
                 self.logging_btn.configure(state="disabled")
 
     def _replay_sync_time_base(self):
-        """Synchronizuje rzeczywisty czas z czasem w logu po pauzie lub przewinięciu."""
+        """Synchronizuje czas z logiem po pauzie lub seek."""
         self.backend.replay_paused_duration = 0.0
-        self.backend.replay_start_real = time.time()
+        self.backend.replay_start_real = __import__("time").time()
         idx = self.backend.replay_index
         if self.backend.replay_data and idx < len(self.backend.replay_data):
             self.backend.replay_start_log = float(self.backend.replay_data[idx].get("time", 0))
 
     def _replay_toggle_pause(self):
-        """Przełącza pauzę/wznowienie replay."""
-        # Jeśli jesteśmy na końcu pliku, a użytkownik klika Play, zacznij od nowa
+        """Przelacza pauze/wznowienie replay."""
         if self.backend.is_replay_paused and self.backend.replay_index >= len(self.backend.replay_data):
             self.backend.replay_index = 0
-            # Reset history buffers to avoid "ghost lines" from the previous run
             with self.backend.data_lock:
                 self.backend.x_data.clear()
                 for v in self.backend.history.values():
                     v.clear()
             self.update_graphs(None)
-            
+
         is_pausing = not self.backend.is_replay_paused
-        
+
         if not is_pausing:
-            # WZNAWIANIE: Synchronizuj bazę czasu, by playback ruszył od razu od obecnego indexu
             self._replay_sync_time_base()
-            self.replay_pause_btn.configure(text="▶")
+            self.replay_pause_btn.configure(text="⏸")  # gra: pokaz ikone pauzy
         else:
-            # PAUZOWANIE
-            self.replay_pause_btn.configure(text="⏸")
+            self.replay_pause_btn.configure(text="▶")  # spauzowane: pokaz play
 
         self.backend.is_replay_paused = is_pausing
         self.update_status_labels()
 
     def _on_slider_press(self, event):
-        """Zapamiętuje stan przed przewijaniem i włącza tryb scrubbing."""
+        """Zapamietuje stan przed scrubbing."""
         self._was_playing_before_scrub = not self.backend.is_replay_paused
         self.backend.is_scrubbing = True
         self._last_seek_label_update = 0
 
     def _on_slider_release(self, event):
-        """Kończy scrubbing, odświeża wykresy i zawsze wznawia odtwarzanie."""
+        """Konczy scrubbing i wznawia odtwarzanie."""
         self._finish_scrubbing()
         self.backend.is_replay_paused = False
-        self.replay_pause_btn.configure(text="âŹ¸")
+        self.replay_pause_btn.configure(text="⏸")
         self._replay_sync_time_base()
         self.update_status_labels()
 
     def _replay_seek(self, value):
-        """Ultra-szybka aktualizacja przy przesuwaniu suwaka."""
+        """Ultra-szybka aktualizacja suwaka."""
         total = len(self.backend.replay_data)
         if total > 0:
             new_index = int(float(value) * (total - 1))
             self.backend.replay_index = max(0, min(new_index, total - 1))
-            
-            # 1. Pobierz dane do backend.current (już jako floaty)
             row = self.backend.replay_data[self.backend.replay_index]
             try:
                 self.backend.current.update({
-                    k: row.get(k, 0.0) for k in ["rpm", "speed", "temp", "maf", "load", "throttle", 
-                                               "trans_temp", "hev_soc", "hev_volts", "hev_power", 
+                    k: row.get(k, 0.0) for k in ["rpm", "speed", "temp", "maf", "load", "throttle",
+                                               "trans_temp", "hev_soc", "hev_volts", "hev_power",
                                                "voltage_12v", "mpg"]
                 })
                 self.backend.current["replayed_graphs"] = row.get("active_graphs", "")
             except: pass
-
-            # 2. Throttled label update (~30 FPS) dla płynności
-            now = time.time()
+            import time as _t
+            now = _t.time()
             if now - getattr(self, "_last_seek_label_update", 0) > 0.03:
                 self._last_seek_label_update = now
                 self.update_digital_indicators()
-
-            # 3. Czyść bufory wykresów (szybkie)
             with self.backend.data_lock:
                 self.backend.x_data.clear()
                 for v in self.backend.history.values():
                     v.clear()
 
     def _finish_scrubbing(self):
-        """Kończy proces przewijania i wymusza pełny redraw."""
+        """Konczy scrubbing i wymusza redraw."""
         self.backend.is_scrubbing = False
         self.update_digital_indicators()
-        self.update_graphs(None) # Ciężkie rysowanie
+        self.update_graphs(None)
         self._replay_sync_time_base()
 
     def _update_replay_bar(self):
-        """Cyklicznie aktualizuje timeline replay, dopóki trwa odtwarzanie."""
+        """Cyklicznie aktualizuje pasek replay."""
         if self._replay_bar_after_id:
             self.after_cancel(self._replay_bar_after_id)
             self._replay_bar_after_id = None
-
-        if self.backend.is_scrubbing: # Nie przeszkadzaj użytkownikowi w przewijaniu
+        if self.backend.is_scrubbing:
             self._replay_bar_after_id = self.after(200, self._update_replay_bar)
             return
-            
         if not self.backend.is_replay:
-            self._replay_stop()
             return
-
         total = len(self.backend.replay_data)
         current = self.backend.replay_index
         if total > 0:
             progress = min(current / total, 1.0)
             self.replay_progress.set(progress)
-            # Czas w formacie m:ss (korzystamy z rzeczywistego czasu zapisanego w logu)
             row_now = self.backend.replay_data[min(current, total - 1)]
             row_end = self.backend.replay_data[-1]
             cur_s = int(float(row_now.get("time", 0)))
             tot_s = int(float(row_end.get("time", 0)))
-            
             self.replay_time_lbl.configure(
                 text=f"{cur_s // 60}:{cur_s % 60:02d} / {tot_s // 60}:{tot_s % 60:02d}"
             )
-            # Upewnij się że po dotarciu do końca przycisk Play powraca
+            # Po dotarciu do końca — pauzujemy i pokazujemy ▶ (kliknięcie wznowi od początku)
             if current >= total:
-                self.replay_pause_btn.configure(text="–¶")
+                if not self.backend.is_replay_paused:
+                    self.backend.is_replay_paused = True
+                    self.update_status_labels()
+                self.replay_pause_btn.configure(text="▶")
+
         self._replay_bar_after_id = self.after(500, self._update_replay_bar)
+
+
 
     def delete_session(self, filepath):
         texts = LOCALIZATION[self.current_lang]
@@ -3537,7 +3563,7 @@ class OBDApp(ctk.CTk):
         if self.backend.is_replay:
             rep_g = self.backend.current.get("replayed_graphs", "")
             if rep_g and isinstance(rep_g, str):
-                new_graphs = [g.strip() for g in rep_g.split(",") if g.strip()][:3]
+                new_graphs = [g.strip() for g in rep_g.split(",") if g.strip()]
                 if new_graphs and new_graphs != self.active_graphs:
                     self.active_graphs = new_graphs
                     # Aktualizacja checkboxów w UI
@@ -3603,7 +3629,8 @@ class OBDApp(ctk.CTk):
                 self._axes.append(ax)
                 
                 key = self.active_graphs[i]
-                color = ["#FF4C4C", "#4CA6FF", "#4CFF4C"][i]
+                colors = ["#FF4C4C", "#4CA6FF", "#4CFF4C", "#FFD700", "#FF8C00", "#FF69B4", "#8A2BE2", "#00FFFF", "#FF1493", "#32CD32", "#FF00FF", "#1E90FF"]
+                color = colors[i % len(colors)]
                 line, = ax.plot([], [], color=color, linewidth=2.5, antialiased=True)
                 self._lines[key] = line
                 
@@ -3611,20 +3638,23 @@ class OBDApp(ctk.CTk):
             self._needs_layout = True
             
         axes = getattr(self, '_axes', [])
-        # ... (labels dictionary remains same)
+        
+        is_ev = self.backend.vehicle_type == "EV"
+        is_imp = self.backend.use_imperial
+        
         labels = {
-            "rpm": texts.get("rpm_lbl", "RPM"),
-            "speed": texts.get("speed_lbl", "Speed"),
-            "temp": texts.get("temp_lbl", "Temp"),
-            "maf": texts.get("maf_lbl", "MAF"),
+            "rpm": texts.get("ev_power_lbl" if is_ev else "rpm_lbl", texts.get("engine_revs", "RPM")),
+            "speed": texts.get("speed_f" if is_imp else "speed_c", texts.get("vehicle_speed", "Speed")),
+            "temp": texts.get("temp_bat_f" if is_imp else "temp_bat_c", texts.get("coolant_temp", "Temp")) if is_ev else texts.get("temp_f" if is_imp else "temp_c", texts.get("coolant_temp", "Temp")),
+            "maf": texts.get("bat_volt_lbl" if is_ev else "maf_lbl", texts.get("maf_flow", "MAF")),
             "load": texts.get("engine_load", "Load"),
             "throttle": texts.get("throttle_pos", "Throttle"),
-            "trans_temp": texts.get("trans_label", "Trans Temp"),
-            "hev_soc": texts.get("batt_soc", "SOC"),
+            "trans_temp": texts.get("temp_ev_f" if is_imp else "temp_ev_c", texts.get("trans_temp", "Trans Temp")) if is_ev else texts.get("temp_trans_f" if is_imp else "temp_trans_c", texts.get("trans_temp", "Trans Temp")),
+            "hev_soc": texts.get("bat_state_lbl" if is_ev else "batt_soc", texts.get("battery_soc", "SOC")),
             "hev_volts": texts.get("hev_voltage", "HV Volts"),
-            "hev_power": texts.get("ev_power_label", "EV Power"),
+            "hev_power": texts.get("ev_power", "EV Power"),
             "voltage_12v": texts.get("v12_voltage", "12V"),
-            "mpg": texts.get("fuel_cons", "Consumption")
+            "mpg": texts.get("cons_f" if is_imp else "cons_c", "Consumption")
         }
 
         for i, key in enumerate(self.active_graphs):
