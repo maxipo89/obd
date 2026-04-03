@@ -934,7 +934,7 @@ class OBDApp(ctk.CTk):
     """Główna klasa GUI bazująca na systemie ZAKĹADEK (Tabview)."""
     def __init__(self):
         super().__init__()
-        self.title("OBD Master Pro V6")
+        self.title("OBD_MASTER_PRO_V7")
         self.geometry("1280x820")
         self.minsize(1280, 820)
         
@@ -1190,7 +1190,7 @@ class OBDApp(ctk.CTk):
         self.sidebar.grid(row=0, column=0, sticky="nsew")
         self.sidebar.grid_rowconfigure(8, weight=1)
         
-        self.logo_label = ctk.CTkLabel(self.sidebar, text="OBD MASTER PRO V6", font=ctk.CTkFont(size=24, weight="bold"))
+        self.logo_label = ctk.CTkLabel(self.sidebar, text="OBD_MASTER_PRO_V7", font=ctk.CTkFont(size=24, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(30, 20))
         
         # Wybór Języka (Flag)
@@ -1261,7 +1261,7 @@ class OBDApp(ctk.CTk):
         self.status_label.configure(text=status_text, text_color=color)
 
         # Stopka
-        self.signature = ctk.CTkLabel(self.sidebar, text="OBD MASTER PRO V5", font=ctk.CTkFont(size=11, slant="italic"), text_color=("#333333", "gray"))
+        self.signature = ctk.CTkLabel(self.sidebar, text="OBD_MASTER_PRO_V7", font=ctk.CTkFont(size=11, slant="italic"), text_color=("#333333", "gray"))
         self.signature.grid(row=9, column=0, padx=20, pady=20, sticky="s")
 
     def change_lang(self, lang_code):
@@ -1293,10 +1293,10 @@ class OBDApp(ctk.CTk):
         if hasattr(self, "del_all_btn"):
             self.del_all_btn.configure(text=texts.get("del_all_btn", "Delete All"))
             
-        self.signature.configure(text="OBD MASTER PRO V6")
+        self.signature.configure(text="OBD_MASTER_PRO_V7")
         
         if hasattr(self, "logo_label"):
-            self.logo_label.configure(text=texts.get("sidebar_logo", "OBD MASTER PRO V6"))
+            self.logo_label.configure(text=texts.get("sidebar_logo", "OBD_MASTER_PRO_V7"))
         
         # Tab titles (Robust Dynamic localization)
         try:
