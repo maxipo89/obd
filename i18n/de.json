@@ -1,6 +1,6 @@
 {
-    "title": "OBD_MASTER_PRO_V7",
-    "sidebar_logo": "OBD_MASTER_PRO_V7",
+    "title": "OBD_MASTER_PRO_V8",
+    "sidebar_logo": "OBD_MASTER_PRO_V8",
     "sim_switch": "Daten-Simulator",
     "connect": "Mit OBD-Port verbinden",
     "disconnect": "Fahrzeug trennen",
@@ -388,8 +388,6 @@
     "ren_tweak_blink_5": "Komfortblinken: 5",
     "ren_tweak_mirror": "Spiegelanklappen beim Verriegeln",
     "ren_tweak_temp": "Außentemp. im Tacho anzeigen",
-    "tab_h_k": "Hyundai / Kia",
-    "h_k_expert_desc": "EXPERTENMODUS (HYUNDAI / KIA)",
     "h_k_brand_lbl": "Marke:",
     "h_k_model_lbl": "Modell:",
     "h_k_tweak_seatbelt": "Gurtwarner deaktivieren",

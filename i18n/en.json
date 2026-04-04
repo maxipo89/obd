@@ -1,6 +1,6 @@
 {
-    "title": "OBD_MASTER_PRO_V7",
-    "sidebar_logo": "OBD_MASTER_PRO_V7",
+    "title": "OBD_MASTER_PRO_V8",
+    "sidebar_logo": "OBD_MASTER_PRO_V8",
     "sim_switch": "Data Simulator",
     "connect": "Connect to OBD Device",
     "disconnect": "Disconnect Vehicle",
@@ -387,8 +387,6 @@
     "ren_tweak_blink_5": "Turn signal blinks: 5",
     "ren_tweak_mirror": "Mirror Fold on Lock",
     "ren_tweak_temp": "Display Ext. Temp in Cluster",
-    "tab_h_k": "Hyundai / Kia",
-    "h_k_expert_desc": "EXPERT MODE (HYUNDAI / KIA)",
     "h_k_brand_lbl": "Brand:",
     "h_k_model_lbl": "Model:",
     "h_k_tweak_seatbelt": "Disable Seatbelt Warning Chime",
