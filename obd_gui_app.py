@@ -973,10 +973,13 @@ class OBDApp(ctk.CTk):
             ],
             "elec": [
                 {"id": "heartbeat", "name_key": "vag_tweak_heartbeat", "module": "09", "security": "31347", "commands": ["1003", "2E020C01"]},
-                {"id": "comfort", "name_key": "vag_tweak_comfort", "module": "09", "security": "31347", "commands": ["1003", "2E054105"]},
+                {"id": "comfort_3", "name_key": "vag_tweak_comfort_3", "module": "09", "security": "31347", "commands": ["1003", "2E054103"]},
+                {"id": "comfort_4", "name_key": "vag_tweak_comfort_4", "module": "09", "security": "31347", "commands": ["1003", "2E054104"]},
+                {"id": "comfort_5", "name_key": "vag_tweak_comfort_5", "module": "09", "security": "31347", "commands": ["1003", "2E054105"]},
                 {"id": "drlmenu", "name_key": "vag_tweak_drlmenu", "module": "09", "security": "31347", "commands": ["1003", "2E080401"]},
                 {"id": "cornering", "name_key": "vag_tweak_cornering", "module": "09", "security": "31347", "commands": ["1003", "2E049101"]},
-                {"id": "chlh", "name_key": "vag_tweak_chlh", "module": "09", "security": "31347", "commands": ["1003", "2E049201"]},
+                {"id": "chlh_auto", "name_key": "vag_tweak_chlh_auto", "module": "09", "security": "31347", "commands": ["1003", "2E049201"]},
+                {"id": "chlh_manual", "name_key": "vag_tweak_chlh_manual", "module": "09", "security": "31347", "commands": ["1003", "2E049200"]},
                 {"id": "drltail", "name_key": "vag_tweak_drltail", "module": "09", "security": "31347", "commands": ["1003", "2E049301"]},
                 {"id": "emergstop", "name_key": "vag_tweak_emergstop", "module": "09", "security": "31347", "commands": ["1003", "2E049401"]}
             ],
@@ -1002,96 +1005,277 @@ class OBDApp(ctk.CTk):
         self.STELLANTIS_TWEAKS_CONFIG = {
             "Opel": {
                 "Astra J / Insignia A": [
-                    {"id": "opel_bc_unlock", "name_key": "stl_op_bc_unlock", "module": "IPC (0x244)", "commands": ["1003", "3B010101"]},
-                    {"id": "opel_oil_reset_uds", "name_key": "stl_op_oil_reset", "module": "ECM", "commands": ["1003", "2E02C601"]},
-                    {"id": "opel_tpms_learn", "name_key": "stl_op_tpms", "module": "BCM", "commands": ["1003", "31010001"]}
+                    {"id": "opel_bc_unlock", "name_key": "stl_op_bc_unlock", "category": "dash", "module": "IPC (0x244)", "commands": ["1003", "3B010101"]},
+                    {"id": "opel_oil_reset_uds", "name_key": "stl_op_oil_reset", "category": "engine", "module": "ECM", "commands": ["1003", "2E02C601"]},
+                    {"id": "opel_tpms_learn", "name_key": "stl_op_tpms", "category": "engine", "module": "BCM", "commands": ["1003", "31010001"]},
+                    {"id": "opel_comfort_blink_3", "name_key": "stl_op_comfort_blink_3", "category": "elec", "module": "BCM", "commands": ["1003", "2E054501"]},
+                    {"id": "opel_comfort_blink_5", "name_key": "stl_op_comfort_blink_5", "category": "elec", "module": "BCM", "commands": ["1003", "2E054502"]},
+                    {"id": "opel_mirror_heat", "name_key": "stl_op_mirror_heat", "category": "comfort", "module": "BCM", "commands": ["1003", "2E013501"]}
                 ],
                 "Astra K / Insignia B": [
-                    {"id": "opel_needle_uds", "name_key": "stl_op_needle", "module": "IPC", "commands": ["1003", "2E060D01"]},
-                    {"id": "opel_eco_off", "name_key": "stl_op_eco", "module": "BCM", "commands": ["1003", "2E010200"]},
-                    {"id": "opel_theme", "name_key": "stl_opel_theme", "module": "IPC", "commands": ["1003", "2E08A201"]}
+                    {"id": "opel_needle_uds", "name_key": "stl_op_needle", "category": "dash", "module": "IPC", "commands": ["1003", "2E060D01"]},
+                    {"id": "opel_eco_off", "name_key": "stl_op_eco", "category": "engine", "module": "BCM", "commands": ["1003", "2E010200"]},
+                    {"id": "opel_theme", "name_key": "stl_opel_theme", "category": "dash", "module": "IPC", "commands": ["1003", "2E08A201"]},
+                    {"id": "opel_drl_off", "name_key": "stl_op_drl_off", "category": "elec", "module": "BCM", "commands": ["1003", "2E023100"]},
+                    {"id": "opel_autolock", "name_key": "stl_op_autolock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012301"]},
+                    {"id": "opel_lane_alert", "name_key": "stl_op_lane_alert", "category": "elec", "module": "ADAS", "commands": ["1003", "2E080501"]}
                 ],
                 "Corsa E": [
-                    {"id": "opel_rev_camera", "name_key": "stl_op_camera", "module": "DISP", "commands": ["1003", "2E098201"]}
+                    {"id": "opel_rev_camera", "name_key": "stl_op_camera", "category": "elec", "module": "DISP", "commands": ["1003", "2E098201"]},
+                    {"id": "opel_corsa_sport", "name_key": "stl_op_corsa_sport", "category": "engine", "module": "ECM", "commands": ["1003", "2E048201"]},
+                    {"id": "opel_corsa_seatbelt", "name_key": "stl_op_corsa_seatbelt", "category": "dash", "module": "IPC", "commands": ["1003", "2E033100"]}
                 ]
             },
             "Fiat": {
                 "Tipo / 500X": [
-                    {"id": "fiat_srv_reset", "name_key": "stl_fi_srv_reset", "module": "BCM", "commands": ["1003", "31020004"]},
-                    {"id": "fiat_dpf_regen", "name_key": "stl_fi_dpf", "module": "ECM", "commands": ["1003", "31010005"]},
-                    {"id": "fiat_learn_proxy", "name_key": "stl_fi_proxy", "module": "BCM", "commands": ["1080", "1081", "31010203"]},
-                    {"id": "fiat_corner", "name_key": "stl_fiat_cornering", "module": "BCM", "commands": ["1003", "2E054201"]}
+                    {"id": "fiat_srv_reset", "name_key": "stl_fi_srv_reset", "category": "engine", "module": "BCM", "commands": ["1003", "31020004"]},
+                    {"id": "fiat_dpf_regen", "name_key": "stl_fi_dpf", "category": "engine", "module": "ECM", "commands": ["1003", "31010005"]},
+                    {"id": "fiat_learn_proxy", "name_key": "stl_fi_proxy", "category": "elec", "module": "BCM", "commands": ["1080", "1081", "31010203"]},
+                    {"id": "fiat_corner", "name_key": "stl_fiat_cornering", "category": "elec", "module": "BCM", "commands": ["1003", "2E054201"]},
+                    {"id": "fiat_autolock", "name_key": "stl_fi_autolock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012301"]},
+                    {"id": "fiat_mirror_fold", "name_key": "stl_fi_mirror_fold", "category": "comfort", "module": "BCM", "commands": ["1003", "2E013401"]},
+                    {"id": "fiat_tpms_reset", "name_key": "stl_fi_tpms", "category": "engine", "module": "BCM", "commands": ["1003", "31010002"]}
+                ],
+                "500 / Panda": [
+                    {"id": "fiat500_needle", "name_key": "stl_fi500_needle", "category": "dash", "module": "IPC", "commands": ["1003", "2E060D01"]},
+                    {"id": "fiat500_seatbelt", "name_key": "stl_fi500_seatbelt", "category": "dash", "module": "IPC", "commands": ["1003", "2E033100"]},
+                    {"id": "fiat500_city", "name_key": "stl_fi500_city", "category": "engine", "module": "ECM", "commands": ["1003", "2E054802"]},
+                    {"id": "fiat500_sport_mode", "name_key": "stl_fi500_sport", "category": "engine", "module": "ECM", "commands": ["1003", "2E048201"]}
                 ]
             },
             "PSA (Peugeot/Citroen)": {
                 "308 / 508 / C4": [
-                    {"id": "psa_mirror_fold", "name_key": "stl_psa_mirror", "module": "BSI", "commands": ["1003", "2E013401"]},
-                    {"id": "psa_drl_menu", "name_key": "stl_psa_drl", "module": "BSI", "commands": ["1003", "2E054101"]},
-                    {"id": "psa_vim", "name_key": "stl_psa_video", "module": "NAC", "commands": ["1003", "2E065201"]},
-                    {"id": "psa_diag_screen", "name_key": "stl_psa_diag", "module": "SMEG", "commands": ["1003", "2E091101"]},
-                    {"id": "psa_startstop", "name_key": "stl_psa_startstop", "module": "BSI", "commands": ["1003", "2E010200"]}
+                    {"id": "psa_mirror_fold", "name_key": "stl_psa_mirror", "category": "comfort", "module": "BSI", "commands": ["1003", "2E013401"]},
+                    {"id": "psa_drl_menu", "name_key": "stl_psa_drl", "category": "elec", "module": "BSI", "commands": ["1003", "2E054101"]},
+                    {"id": "psa_vim", "name_key": "stl_psa_video", "category": "elec", "module": "NAC", "commands": ["1003", "2E065201"]},
+                    {"id": "psa_diag_screen", "name_key": "stl_psa_diag", "category": "elec", "module": "SMEG", "commands": ["1003", "2E091101"]},
+                    {"id": "psa_startstop", "name_key": "stl_psa_startstop", "category": "engine", "module": "BSI", "commands": ["1003", "2E010200"]},
+                    {"id": "psa_autolock", "name_key": "stl_psa_autolock", "category": "comfort", "module": "BSI", "commands": ["1003", "2E012301"]},
+                    {"id": "psa_speed_beep_120", "name_key": "stl_psa_speed_beep_120", "category": "elec", "module": "BSI", "commands": ["1003", "2E033878"]},
+                    {"id": "psa_speed_beep_130", "name_key": "stl_psa_speed_beep_130", "category": "elec", "module": "BSI", "commands": ["1003", "2E033882"]},
+                    {"id": "psa_sport_mode", "name_key": "stl_psa_sport", "category": "engine", "module": "BSI", "commands": ["1003", "2E048201"]},
+                    {"id": "psa_lane_dep", "name_key": "stl_psa_lane_dep", "category": "elec", "module": "ADAS", "commands": ["1003", "2E080502"]}
+                ],
+                "3008 / 5008 / DS 7": [
+                    {"id": "psa_suv_startstop", "name_key": "stl_psa_startstop", "category": "engine", "module": "BSI", "commands": ["1003", "2E010200"]},
+                    {"id": "psa_suv_ambient", "name_key": "stl_psa_ambient", "category": "elec", "module": "BSI", "commands": ["1003", "2E055A01"]},
+                    {"id": "psa_suv_camera", "name_key": "stl_psa_camera", "category": "elec", "module": "NAC", "commands": ["1003", "2E098201"]}
                 ]
             },
             "Alfa Romeo": {
                 "Giulia / Stelvio": [
-                    {"id": "alfa_sgw", "name_key": "stl_alfa_sgw", "module": "SGW", "commands": ["1003", "31010201"]},
-                    {"id": "alfa_race", "name_key": "stl_alfa_dyn", "module": "BCM", "commands": ["1003", "2E054501"]},
-                    {"id": "alfa_seatbelt", "name_key": "stl_alfa_seatbelt", "module": "IPC", "commands": ["1003", "2E033100"]},
-                    {"id": "alfa_logo", "name_key": "stl_alfa_logo", "module": "ETM", "commands": ["1003", "2E098402"]}
+                    {"id": "alfa_sgw_bypass", "name_key": "stl_alfa_sgw", "category": "elec", "module": "SGW", "commands": ["1003", "31010201"]},
+                    {"id": "alfa_race_mode", "name_key": "stl_alfa_dyn", "category": "engine", "module": "BCM", "commands": ["1003", "2E054501"]},
+                    {"id": "alfa_seatbelt", "name_key": "stl_alfa_seatbelt", "category": "dash", "module": "IPC", "commands": ["1003", "2E033100"]},
+                    {"id": "alfa_logo", "name_key": "stl_alfa_logo", "category": "dash", "module": "ETM", "commands": ["1003", "2E098402"]},
+                    {"id": "alfa_exhaust_mode", "name_key": "stl_alfa_exhaust", "category": "engine", "module": "ECM", "commands": ["1003", "2E010F01"]},
+                    {"id": "alfa_autolock", "name_key": "stl_alfa_autolock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012301"]},
+                    {"id": "alfa_tcs_off", "name_key": "stl_alfa_tcs_off", "category": "engine", "module": "ABS", "commands": ["1003", "2E048B01"]}
                 ],
                 "MiTo": [
-                    {"id": "alfa_mito_needle", "name_key": "stl_alfa_mito_needle", "module": "IPC", "commands": ["1003", "2E060D01"]},
-                    {"id": "alfa_mito_fog", "name_key": "stl_alfa_mito_fog", "module": "BCM", "commands": ["1003", "2E054201"]}
+                    {"id": "alfa_mito_needle", "name_key": "stl_alfa_mito_needle", "category": "dash", "module": "IPC", "commands": ["1003", "2E060D01"]},
+                    {"id": "alfa_mito_fog", "name_key": "stl_alfa_mito_fog", "category": "elec", "module": "BCM", "commands": ["1003", "2E054201"]},
+                    {"id": "alfa_mito_seatbelt", "name_key": "stl_alfa_mito_seatbelt", "category": "dash", "module": "IPC", "commands": ["1003", "2E033100"]},
+                    {"id": "alfa_mito_startstop", "name_key": "stl_alfa_mito_startstop", "category": "engine", "module": "ECM", "commands": ["1003", "2E011200"]},
+                    {"id": "alfa_mito_sport", "name_key": "stl_alfa_mito_sport", "category": "engine", "module": "BCM", "commands": ["1003", "2E054802"]},
+                    {"id": "alfa_mito_dna_race", "name_key": "stl_alfa_mito_dna_race", "category": "engine", "module": "BCM", "commands": ["1003", "2E054903"]},
+                    {"id": "alfa_mito_rpm_limit", "name_key": "stl_alfa_mito_rpm_limit", "category": "engine", "module": "ECM", "commands": ["1003", "2E010F02"]},
+                    {"id": "alfa_mito_mirror_fold", "name_key": "stl_alfa_mito_mirror_fold", "category": "comfort", "module": "BCM", "commands": ["1003", "2E013401"]},
+                    {"id": "alfa_mito_autolock", "name_key": "stl_alfa_mito_autolock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012301"]},
+                    {"id": "alfa_mito_oiltemp", "name_key": "stl_alfa_mito_oiltemp", "category": "dash", "module": "IPC", "commands": ["1003", "2E023401"]},
+                    {"id": "alfa_mito_ac_off", "name_key": "stl_alfa_mito_ac_off", "category": "comfort", "module": "HVAC", "commands": ["1003", "2E010201"]},
+                    {"id": "alfa_mito_wiper_rain", "name_key": "stl_alfa_mito_wiper_rain", "category": "elec", "module": "BCM", "commands": ["1003", "2E049501"]},
+                    {"id": "alfa_mito_bc_unlock", "name_key": "stl_alfa_mito_bc_unlock", "category": "dash", "module": "IPC", "commands": ["1003", "3B010101"]},
+                    {"id": "alfa_mito_horn_lock", "name_key": "stl_alfa_mito_horn_lock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012401"]},
+                    {"id": "alfa_mito_beam_mem", "name_key": "stl_alfa_mito_beam_mem", "category": "elec", "module": "BCM", "commands": ["1003", "2E080101"]},
+                    {"id": "alfa_mito_audio_bose", "name_key": "stl_alfa_mito_audio_bose", "category": "elec", "module": "RADIO", "commands": ["1003", "2E078A01"]},
+                    {"id": "alfa_mito_drl_config", "name_key": "stl_alfa_mito_drl_config", "category": "elec", "module": "BCM", "commands": ["1003", "2E043201"]},
+                    {"id": "alfa_mito_follow_me_30", "name_key": "stl_alfa_mito_follow_me_30", "category": "elec", "module": "BCM", "commands": ["1003", "2E04351E"]},
+                    {"id": "alfa_mito_follow_me_60", "name_key": "stl_alfa_mito_follow_me_60", "category": "elec", "module": "BCM", "commands": ["1003", "2E04353C"]},
+                    {"id": "alfa_mito_rev_beep", "name_key": "stl_alfa_mito_rev_beep", "category": "elec", "module": "BCM", "commands": ["1003", "2E012800"]},
+                    {"id": "alfa_mito_st_sens_std", "name_key": "stl_alfa_mito_st_sens_std", "category": "engine", "module": "ECM", "commands": ["1003", "2E048A01"]},
+                    {"id": "alfa_mito_st_sens_sport", "name_key": "stl_alfa_mito_st_sens_sport", "category": "engine", "module": "ECM", "commands": ["1003", "2E048A02"]}
                 ]
             },
             "Jeep": {
                 "Renegade / Compass": [
-                    {"id": "jeep_drl", "name_key": "stl_jeep_drl", "module": "BCM", "commands": ["1003", "2E023101"]},
-                    {"id": "jeep_horn", "name_key": "stl_jeep_horn", "module": "BCM", "commands": ["1003", "2E012401"]},
-                    {"id": "jeep_offroad", "name_key": "stl_jeep_offroad", "module": "RADIO", "commands": ["1003", "2E0CC201"]}
+                    {"id": "jeep_drl_cfg", "name_key": "stl_jeep_drl", "category": "elec", "module": "BCM", "commands": ["1003", "2E023101"]},
+                    {"id": "jeep_horn_cfg", "name_key": "stl_jeep_horn", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012401"]},
+                    {"id": "jeep_offroad_cfg", "name_key": "stl_jeep_offroad", "category": "dash", "module": "RADIO", "commands": ["1003", "2E0CC201"]},
+                    {"id": "jeep_autolock", "name_key": "stl_jeep_autolock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012301"]},
+                    {"id": "jeep_mirror_fold", "name_key": "stl_jeep_mirror_fold", "category": "comfort", "module": "BCM", "commands": ["1003", "2E013401"]},
+                    {"id": "jeep_seatbelt", "name_key": "stl_jeep_seatbelt", "category": "dash", "module": "IPC", "commands": ["1003", "2E033100"]},
+                    {"id": "jeep_trail_cam", "name_key": "stl_jeep_trail_cam", "category": "elec", "module": "RADIO", "commands": ["1003", "2E0CC301"]}
+                ],
+                "Grand Cherokee / Wrangler": [
+                    {"id": "jeep_gc_performance", "name_key": "stl_jeep_gc_perf", "category": "dash", "module": "7E0", "commands": ["1003", "2E010A01"]},
+                    {"id": "jeep_gc_exhaust", "name_key": "stl_jeep_gc_exhaust", "category": "engine", "module": "7E0", "commands": ["1003", "2E010F01"]},
+                    {"id": "jeep_gc_tow_display", "name_key": "stl_jeep_gc_tow", "category": "dash", "module": "7A0", "commands": ["1003", "2E054411"]},
+                    {"id": "jeep_sway_bar", "name_key": "stl_jeep_sway", "category": "engine", "module": "BCM", "commands": ["1003", "31010008"]}
                 ]
             },
             "Dodge": {
                 "Challenger / Charger": [
-                    {"id": "dg_srt_pages", "name_key": "stl_dg_srt", "module": "7E0", "commands": ["1003", "2E010A01"]},
-                    {"id": "dg_drl_turn", "name_key": "stl_dg_drl", "module": "7A6", "commands": ["1003", "2E023402"]},
-                    {"id": "dg_belt_chime", "name_key": "stl_dg_belt", "module": "7A0", "commands": ["1003", "2E033100"]}
+                    {"id": "dodge_srt_perf", "name_key": "stl_dg_exhaust", "category": "dash", "module": "RADIO", "commands": ["1003", "2E012A01"]},
+                    {"id": "dodge_exhaust", "name_key": "stl_dg_exhaust", "category": "engine", "module": "ECM", "commands": ["1003", "2E010F01"]},
+                    {"id": "dodge_launch", "name_key": "stl_dg_launch", "category": "engine", "module": "ECM", "commands": ["1003", "2E010B01"]}
                 ]
             },
             "RAM": {
                 "1500 / 2500": [
-                    {"id": "ram_trailer", "name_key": "stl_ram_trailer", "module": "7A6", "commands": ["1003", "2E054401"]},
-                    {"id": "ram_cargo", "name_key": "stl_ram_cargo", "module": "7E0", "commands": ["1003", "2E0CC401"]},
-                    {"id": "ram_fold", "name_key": "stl_ram_fold", "module": "7A6", "commands": ["1003", "2E012801"]}
+                    {"id": "ram_horn_cfg", "name_key": "stl_ram_horn_lock", "category": "comfort", "module": "BCM", "commands": ["1003", "2E012401"]},
+                    {"id": "ram_air_suspension", "name_key": "stl_ram_air_susp", "category": "engine", "module": "ASCM", "commands": ["1003", "3101000A"]},
+                    {"id": "ram_tow_mirror", "name_key": "stl_ram_tow", "category": "comfort", "module": "BCM", "commands": ["1003", "2E013801"]}
                 ]
             },
             "DS Automobiles": {
-                "DS 7 / DS 3": [
-                    {"id": "ds_ambient", "name_key": "stl_ds_ambient", "module": "BSI", "commands": ["1003", "2E014502"]},
-                    {"id": "ds_matrix", "name_key": "stl_ds_matrix", "module": "BSI", "commands": ["1003", "2E067101"]}
+                "DS 3 / DS 4": [
+                    {"id": "ds_vim_cfg", "name_key": "stl_ds_vim", "category": "elec", "module": "NAC", "commands": ["1003", "2E065201"]},
+                    {"id": "ds_mirror_cfg", "name_key": "stl_ds_mirror_fold", "category": "comfort", "module": "BSI", "commands": ["1003", "2E013401"]},
+                    {"id": "ds_sport_mode", "name_key": "stl_ds_sport", "category": "engine", "module": "BSI", "commands": ["1003", "2E048201"]},
+                    {"id": "ds_welcome_anim", "name_key": "stl_ds_welcome", "category": "dash", "module": "IPC", "commands": ["1003", "2E098402"]}
+                ],
+                "DS 7 Crossback": [
+                    {"id": "ds7_night_vision", "name_key": "stl_ds_night_vision", "category": "elec", "module": "IPC", "commands": ["1003", "2E055C01"]},
+                    {"id": "ds7_ambient_cfg", "name_key": "stl_ds_ambient", "category": "elec", "module": "BSI", "commands": ["1003", "2E055A02"]},
+                    {"id": "ds7_active_scan", "name_key": "stl_ds_active_scan", "category": "comfort", "module": "SUSP", "commands": ["1003", "2E089101"]}
                 ]
             },
             "Maserati": {
                 "Ghibli / Levante": [
-                    {"id": "mas_valves", "name_key": "stl_mas_valves", "module": "7E0", "commands": ["1003", "2E010F01"]},
-                    {"id": "mas_stopstart", "name_key": "stl_mas_stopstart", "module": "7A6", "commands": ["1003", "2E011200"]}
+                    {"id": "mas_valves_cfg", "name_key": "stl_mas_valves", "category": "engine", "module": "7E0", "commands": ["1003", "2E010F01"]},
+                    {"id": "mas_stopstart_cfg", "name_key": "stl_mas_stopstart", "category": "engine", "module": "7A6", "commands": ["1003", "2E011200"]},
+                    {"id": "mas_launch_ctrl", "name_key": "stl_mas_launch", "category": "engine", "module": "7E0", "commands": ["1003", "2E010B01"]},
+                    {"id": "mas_race_mode", "name_key": "stl_mas_race", "category": "engine", "module": "7A6", "commands": ["1003", "2E054503"]},
+                    {"id": "mas_easy_entry", "name_key": "stl_mas_easy_entry", "category": "comfort", "module": "7A6", "commands": ["1003", "2E023101"]},
+                    {"id": "mas_windows_cfg", "name_key": "stl_mas_windows", "category": "comfort", "module": "7A6", "commands": ["1003", "2E012601"]},
+                    {"id": "mas_seatbelt_cfg", "name_key": "stl_mas_seatbelt", "category": "dash", "module": "7A0", "commands": ["1003", "2E033100"]}
                 ]
             },
             "Lancia": {
                 "Ypsilon / Delta": [
-                    {"id": "lan_city", "name_key": "stl_lan_city", "module": "7A6", "commands": ["1003", "2E054801"]},
-                    {"id": "lan_srv", "name_key": "stl_lan_srv", "module": "7A6", "commands": ["1003", "31020004"]}
+                    {"id": "lan_city_light", "name_key": "stl_lan_city_light", "category": "engine", "module": "7A6", "commands": ["1003", "2E054801"]},
+                    {"id": "lan_city_std", "name_key": "stl_lan_city_std", "category": "engine", "module": "7A6", "commands": ["1003", "2E054800"]},
+                    {"id": "lan_srv_cfg", "name_key": "stl_lan_srv", "category": "engine", "module": "7A6", "commands": ["1003", "31020004"]},
+                    {"id": "lan_mirror_cfg", "name_key": "stl_lan_mirror_fold", "category": "comfort", "module": "7A6", "commands": ["1003", "2E013401"]},
+                    {"id": "lan_seatbelt_cfg", "name_key": "stl_lan_seatbelt", "category": "dash", "module": "7A0", "commands": ["1003", "2E033100"]}
                 ]
             }
         }
+
+        self.RENAULT_TWEAKS_CONFIG = {
+            "Clio IV / V": [
+                {"id": "ren_vim", "name_key": "ren_tweak_vim", "category": "elec", "module": "770", "commands": ["1003", "2E065201"]},
+                {"id": "ren_aa", "name_key": "ren_tweak_aa", "category": "elec", "module": "770", "commands": ["1003", "2E400101"]},
+                {"id": "ren_corner", "name_key": "ren_tweak_cornering", "category": "elec", "module": "7A6", "commands": ["1003", "2E054201"]},
+                {"id": "ren_ss_off", "name_key": "ren_tweak_ss", "category": "engine", "module": "7E0", "commands": ["1003", "2E010200"]},
+                {"id": "ren_belt", "name_key": "ren_tweak_seatbelt", "category": "dash", "module": "7A0", "commands": ["1003", "2E033100"]},
+                {"id": "ren_clio_blink_3", "name_key": "ren_tweak_blink_3", "category": "elec", "module": "7A6", "commands": ["1003", "2E054503"]},
+                {"id": "ren_clio_blink_5", "name_key": "ren_tweak_blink_5", "category": "elec", "module": "7A6", "commands": ["1003", "2E054505"]}
+            ],
+            "Megane IV / Talisman / Kadjar": [
+                {"id": "ren_meg_vim", "name_key": "ren_tweak_vim", "category": "elec", "module": "770", "commands": ["1003", "2E065201"]},
+                {"id": "ren_meg_aa", "name_key": "ren_tweak_aa", "category": "elec", "module": "770", "commands": ["1003", "2E400101"]},
+                {"id": "ren_meg_welcome", "name_key": "ren_tweak_welcome", "category": "dash", "module": "7A0", "commands": ["1003", "2E098402"]},
+                {"id": "ren_meg_wiper", "name_key": "ren_tweak_rear_wiper", "category": "elec", "module": "7A6", "commands": ["1003", "2E014500"]},
+                {"id": "ren_meg_blink", "name_key": "ren_tweak_blink", "category": "elec", "module": "7A6", "commands": ["1003", "2E054505"]}
+            ],
+            "Scenic III": [
+                {"id": "ren_sce3_ss_off", "name_key": "ren_sce3_ss_off", "category": "engine", "module": "7E0", "commands": ["1003", "2E010200"]},
+                {"id": "ren_sce3_auto_brake_on", "name_key": "ren_sce3_auto_brake_on", "category": "comfort", "module": "7A6", "commands": ["1003", "2E012401"]},
+                {"id": "ren_sce3_auto_brake_off", "name_key": "ren_sce3_auto_brake_off", "category": "comfort", "module": "7A6", "commands": ["1003", "2E012400"]},
+                {"id": "ren_sce3_teardrop_wipe", "name_key": "ren_sce3_teardrop_wipe", "category": "elec", "module": "7A6", "commands": ["1003", "2E014501"]},
+                {"id": "ren_sce3_rain_sens_high", "name_key": "ren_sce3_rain_sens_high", "category": "elec", "module": "7A6", "commands": ["1003", "2E014502"]},
+                {"id": "ren_sce3_rain_sens_std", "name_key": "ren_sce3_rain_sens_std", "category": "elec", "module": "7A6", "commands": ["1003", "2E014501"]},
+                {"id": "ren_sce3_light_sens_fast", "name_key": "ren_sce3_light_sens_fast", "category": "elec", "module": "7A6", "commands": ["1003", "2E01450A"]},
+                {"id": "ren_sce3_light_sens_std", "name_key": "ren_sce3_light_sens_std", "category": "elec", "module": "7A6", "commands": ["1003", "2E014505"]},
+                {"id": "ren_sce3_headlight_wash", "name_key": "ren_sce3_headlight_wash", "category": "elec", "module": "7A6", "commands": ["1003", "2E054201"]},
+                {"id": "ren_sce3_oil_reset", "name_key": "ren_sce3_oil_reset", "category": "engine", "module": "7E0", "commands": ["1003", "2E02C600"]},
+                {"id": "ren_sce3_clock_temp", "name_key": "ren_sce3_clock_temp", "category": "dash", "module": "7A0", "commands": ["1003", "2E098401"]},
+                {"id": "ren_sce3_buzzer_park_low", "name_key": "ren_sce3_buzzer_park_low", "category": "comfort", "module": "770", "commands": ["1003", "2E078A01"]},
+                {"id": "ren_sce3_buzzer_park_high", "name_key": "ren_sce3_buzzer_park_high", "category": "comfort", "module": "770", "commands": ["1003", "2E078A03"]},
+                {"id": "ren_sce3_drltail", "name_key": "ren_sce3_drltail", "category": "elec", "module": "7A6", "commands": ["1003", "2E049301"]},
+                {"id": "ren_sce3_welcome_1", "name_key": "ren_sce3_welcome_1", "category": "dash", "module": "7A0", "commands": ["1003", "2E033101"]},
+                {"id": "ren_sce3_welcome_2", "name_key": "ren_sce3_welcome_2", "category": "dash", "module": "7A0", "commands": ["1003", "2E033102"]},
+                {"id": "ren_sce3_followme_30", "name_key": "ren_sce3_followme_30", "category": "elec", "module": "7A6", "commands": ["1003", "2E05451E"]},
+                {"id": "ren_sce3_followme_60", "name_key": "ren_sce3_followme_60", "category": "elec", "module": "7A6", "commands": ["1003", "2E05453C"]},
+                {"id": "ren_sce3_units", "name_key": "ren_sce3_units", "category": "dash", "module": "7A0", "commands": ["1003", "2E033201"]}
+            ],
+            "Scenic IV": [
+                {"id": "ren_sce_vim", "name_key": "ren_tweak_vim", "category": "elec", "module": "770", "commands": ["1003", "2E065201"]},
+                {"id": "ren_sce_aa", "name_key": "ren_tweak_aa", "category": "elec", "module": "770", "commands": ["1003", "2E400101"]},
+                {"id": "ren_sce_welcome", "name_key": "ren_tweak_welcome", "category": "dash", "module": "7A0", "commands": ["1003", "2E098402"]},
+                {"id": "ren_sce_wiper", "name_key": "ren_tweak_rear_wiper", "category": "elec", "module": "7A6", "commands": ["1003", "2E014500"]},
+                {"id": "ren_sce_mirror", "name_key": "ren_tweak_mirror", "category": "comfort", "module": "7A6", "commands": ["1003", "2E013401"]},
+                {"id": "ren_sce_ss_off", "name_key": "ren_sce_ss_off", "category": "engine", "module": "7E0", "commands": ["1003", "2E010200"]},
+                {"id": "ren_sce_cornering", "name_key": "ren_sce_cornering", "category": "elec", "module": "7A6", "commands": ["1003", "2E054201"]},
+                {"id": "ren_sce_ldw", "name_key": "ren_sce_ldw", "category": "elec", "module": "7A6", "commands": ["1003", "2E080501"]},
+                {"id": "ren_sce_bsw", "name_key": "ren_sce_bsw", "category": "elec", "module": "7A6", "commands": ["1003", "2E080601"]},
+                {"id": "ren_sce_daa", "name_key": "ren_sce_daa", "category": "dash", "module": "7A0", "commands": ["1003", "2E033101"]},
+                {"id": "ren_sce_tsr", "name_key": "ren_sce_tsr", "category": "dash", "module": "7A0", "commands": ["1003", "2E033201"]},
+                {"id": "ren_sce_ahl", "name_key": "ren_sce_ahl", "category": "elec", "module": "7A6", "commands": ["1003", "2E080101"]},
+                {"id": "ren_sce_easyentry", "name_key": "ren_sce_easyentry", "category": "comfort", "module": "7A6", "commands": ["1003", "2E023101"]},
+                {"id": "ren_sce_multisense", "name_key": "ren_sce_multisense", "category": "engine", "module": "7E0", "commands": ["1003", "2E048201"]},
+                {"id": "ren_sce_ambient", "name_key": "ren_sce_ambient", "category": "elec", "module": "770", "commands": ["1003", "2E055A01"]},
+                {"id": "ren_sce_cam_guide", "name_key": "ren_sce_cam_guide", "category": "elec", "module": "770", "commands": ["1003", "2E098201"]},
+                {"id": "ren_sce_park_assist", "name_key": "ren_sce_park_assist", "category": "elec", "module": "7A6", "commands": ["1003", "2E089101"]},
+                {"id": "ren_sce_welcome_vol", "name_key": "ren_sce_welcome_vol", "category": "comfort", "module": "770", "commands": ["1003", "2E078A03"]},
+                {"id": "ren_sce_walkaway", "name_key": "ren_sce_walkaway", "category": "comfort", "module": "7A6", "commands": ["1003", "2E012401"]}
+            ]
+        }
+
+        self.HYUNDAI_KIA_TWEAKS_CONFIG = {
+            "Hyundai i30 / Kia Ceed": [
+                {"id": "hk_belt", "name_key": "h_k_tweak_seatbelt", "category": "dash", "module": "7C0", "commands": ["1003", "2E010200"]},
+                {"id": "hk_autolock", "name_key": "h_k_tweak_autolock", "category": "comfort", "module": "770", "commands": ["1003", "2E012201"]},
+                {"id": "hk_welcome", "name_key": "h_k_tweak_welcome_mirror", "category": "comfort", "module": "770", "commands": ["1003", "2E013401"]},
+                {"id": "hk_drl_park", "name_key": "h_k_tweak_drl_park", "category": "elec", "module": "770", "commands": ["1003", "2E023101"]},
+                {"id": "hk_blink_3", "name_key": "h_k_tweak_blink_3", "category": "elec", "module": "770", "commands": ["1003", "2E054503"]},
+                {"id": "hk_blink_5", "name_key": "h_k_tweak_blink_5", "category": "elec", "module": "770", "commands": ["1003", "2E054505"]},
+                {"id": "hk_blink_7", "name_key": "h_k_tweak_blink_7", "category": "elec", "module": "770", "commands": ["1003", "2E054507"]}
+            ],
+            "Hyundai Tucson / Kia Sportage": [
+                {"id": "hk_tuc_tailgate_fast", "name_key": "h_k_tweak_tailgate_fast", "category": "comfort", "module": "7D0", "commands": ["1003", "2E088101"]},
+                {"id": "hk_tuc_tailgate_std", "name_key": "h_k_tweak_tailgate_std", "category": "comfort", "module": "7D0", "commands": ["1003", "2E088100"]},
+                {"id": "hk_tuc_defog", "name_key": "h_k_tweak_defog", "category": "comfort", "module": "7B0", "commands": ["1003", "2E044101"]},
+                {"id": "hk_tuc_ldw", "name_key": "h_k_tweak_ldw_sound", "category": "elec", "module": "7D0", "commands": ["1003", "2E080501"]}
+            ],
+            "Hyundai Kona / Kona SX2 HEV": [
+                {"id": "hk_kon_vess", "name_key": "h_k_tweak_vess", "category": "engine", "module": "7E0", "commands": ["1003", "2E010B01"]},
+                {"id": "hk_kon_esc", "name_key": "h_k_tweak_esc_off", "category": "engine", "module": "7D0", "commands": ["1003", "2E048B01"]},
+                {"id": "hk_kon_tailgate_fast", "name_key": "h_k_tweak_tailgate_fast", "category": "comfort", "module": "7D0", "commands": ["1003", "2E088102"]},
+                {"id": "hk_kon_tailgate_std", "name_key": "h_k_tweak_tailgate_std", "category": "comfort", "module": "7D0", "commands": ["1003", "2E088101"]},
+                {"id": "hk_kon_coasting", "name_key": "hk_kon_coasting", "category": "engine", "module": "7E0", "commands": ["1003", "2E010C01"]},
+                {"id": "hk_kon_aaf", "name_key": "hk_kon_aaf", "category": "engine", "module": "7E0", "commands": ["1003", "2E010D01"]},
+                {"id": "hk_kon_scc_dist_long", "name_key": "hk_kon_scc_dist_long", "category": "elec", "module": "7D0", "commands": ["1003", "2E081001"]},
+                {"id": "hk_kon_scc_dist_short", "name_key": "hk_kon_scc_dist_short", "category": "elec", "module": "7D0", "commands": ["1003", "2E081000"]},
+                {"id": "hk_kon_daw_high", "name_key": "hk_kon_daw_high", "category": "dash", "module": "7C0", "commands": ["1003", "2E033101"]},
+                {"id": "hk_kon_daw_low", "name_key": "hk_kon_daw_low", "category": "dash", "module": "7C0", "commands": ["1003", "2E033100"]},
+                {"id": "hk_kon_lka_std", "name_key": "hk_kon_lka_std", "category": "elec", "module": "7D0", "commands": ["1003", "2E080501"]},
+                {"id": "hk_kon_lka_active", "name_key": "hk_kon_lka_active", "category": "elec", "module": "7D0", "commands": ["1003", "2E080502"]},
+                {"id": "hk_kon_fca_early", "name_key": "hk_kon_fca_early", "category": "elec", "module": "7D0", "commands": ["1003", "2E080601"]},
+                {"id": "hk_kon_fca_late", "name_key": "hk_kon_fca_late", "category": "elec", "module": "7D0", "commands": ["1003", "2E080602"]},
+                {"id": "hk_kon_rcca", "name_key": "hk_kon_rcca", "category": "elec", "module": "7D0", "commands": ["1003", "2E081101"]},
+                {"id": "hk_kon_rspa", "name_key": "hk_kon_rspa", "category": "elec", "module": "7D0", "commands": ["1003", "2E089201"]},
+                {"id": "hk_kon_haptic", "name_key": "hk_kon_haptic", "category": "comfort", "module": "7D0", "commands": ["1003", "2E02D501"]},
+                {"id": "hk_kon_digital_key", "name_key": "hk_kon_digital_key", "category": "elec", "module": "770", "commands": ["1003", "2E091101"]},
+                {"id": "hk_kon_prox_unlock", "name_key": "hk_kon_prox_unlock", "category": "comfort", "module": "770", "commands": ["1003", "2E012402"]},
+                {"id": "hk_kon_mirror_fold", "name_key": "h_k_tweak_welcome_mirror", "category": "comfort", "module": "770", "commands": ["1003", "2E013401"]},
+                {"id": "hk_kon_hba", "name_key": "hk_kon_hba", "category": "elec", "module": "770", "commands": ["1003", "2E080102"]},
+                {"id": "hk_kon_welcome_light", "name_key": "hk_kon_welcome_light", "category": "elec", "module": "770", "commands": ["1003", "2E098202"]},
+                {"id": "hk_kon_wireless_char", "name_key": "hk_kon_wireless_char", "category": "comfort", "module": "770", "commands": ["1003", "2E02D601"]}
+            ]
+        }
         
-        self.alarm_queue = queue.Queue()
+
         self.hud_mode = False
         self._alarm_ui_elements = {} # Do dynamicznej aktualizacji
         self.active_graphs = ["rpm", "speed", "temp"]
         self._is_scrubbing = False
         self._scrubbing_after_id = None
         self.vag_restore_buttons = {} # Dynamiczna aktualizacja po kodowaniu
+        self.ren_restore_buttons = {}
+        self.h_k_restore_buttons = {}
         
         # Wątek dźwiękowy
         threading.Thread(target=self._alarm_sound_worker, daemon=True).start()
@@ -1301,14 +1485,17 @@ class OBDApp(ctk.CTk):
         # Tab titles (Robust Dynamic localization)
         try:
             titles = [
-                texts["tab_live"], texts["tab_dtc"], texts["tab_vag"], 
-                texts.get("tab_stl", "Stellantis"), texts["tab_logs"], texts["tab_settings"]
+                texts["tab_live"], texts["tab_dtc"], texts["tab_coding"], 
+                texts["tab_logs"], texts["tab_settings"]
             ]
             # Accessing the button widgets directly to change their visible text
             tab_buttons = list(self.tabview._segmented_button._buttons_dict.values())
             for i, btn in enumerate(tab_buttons):
                 if i < len(titles):
                     btn.configure(text=titles[i])
+            
+            if hasattr(self, "_coding_brand_lbl_i18n"):
+                self._coding_brand_lbl_i18n.configure(text=texts.get("coding_brand_lbl", "Wybierz Grupę Motoryzacyjną:"))
         except Exception as e:
             print(f"Error updating tab titles: {e}")
         
@@ -1416,44 +1603,13 @@ class OBDApp(ctk.CTk):
         elif self.backend.csv_interval == 2.0: self.csv_seg.set(texts["csv_std"])
         else: self.csv_seg.set(texts["csv_eco"])
 
-        self.alarm_switch.configure(text=texts["master_switch"])
+        if hasattr(self, "alarm_switch"):
+            self.alarm_switch.configure(text=texts["master_switch"])
 
-        # --- VAG Specialist tab live translations ---
-        for key, widget in getattr(self, "_vag_i18n_widgets", {}).items():
-            try:
-                widget.configure(text=texts.get(key, key))
-            except Exception:
-                pass
-        # Update per-tweak buttons and labels
-        for tweak_id, refs in getattr(self, "_vag_tweak_widgets", {}).items():
-            try:
-                refs["name_lbl"].configure(text=texts.get(refs["name_key"], tweak_id))
-                refs["apply_btn"].configure(text=texts.get("vag_btn_apply", "Apply"))
-                refs["restore_btn"].configure(text=texts.get("vag_btn_restore", "Restore"))
-            except Exception:
-                pass
-        # Update category headers
-        for cat_key, lbl in getattr(self, "_vag_cat_labels", {}).items():
-            try:
-                lbl.configure(text=texts.get(f"vag_category_{cat_key}", cat_key).upper())
-            except Exception:
-                pass
-
-        # --- Stellantis Specialist tab live translations ---
-        for key, widget in getattr(self, "_stl_i18n_widgets", {}).items():
-            try:
-                widget.configure(text=texts.get(key, key))
-            except Exception: pass
-        # Update per-tweak buttons and labels
-        for tweak_id, refs in getattr(self, "_stl_tweak_widgets", {}).items():
-            try:
-                refs["name_lbl"].configure(text=texts.get(refs["name_key"], tweak_id))
-                refs["apply_btn"].configure(text=texts.get("stl_btn_apply", "Apply"))
-                refs["restore_btn"].configure(text=texts.get("stl_btn_restore", "Restore"))
-            except Exception: pass
-        # Refresh Stellantis tweak list to update states if needed
+        # Unified Coding Specialist refresh
         try:
-            self._on_stl_model_changed(self.stl_model_menu.get())
+            brand = self.coding_brand_menu.get()
+            self._on_coding_brand_changed(brand)
         except Exception: pass
 
         # Card Labels
@@ -1467,8 +1623,7 @@ class OBDApp(ctk.CTk):
         
         self.tabview.add("Dashboard")
         self.tabview.add("Diagnostics")
-        self.tabview.add("VAG Specialist")
-        self.tabview.add("Stellantis Specialist")
+        self.tabview.add("Coding Specialist")
         self.tabview.add("Sessions")
         self.tabview.add("Settings")
         
@@ -1476,8 +1631,7 @@ class OBDApp(ctk.CTk):
         
         self._build_dashboard_tab()
         self._build_diagnostics_tab()
-        self._build_vag_tab()
-        self._build_stellantis_tab()
+        self._build_coding_specialist_tab()
         self._build_sessions_tab()
         self._build_settings_tab()
 
@@ -1722,6 +1876,49 @@ class OBDApp(ctk.CTk):
         for child in self.replay_bar.winfo_children():
             child.grid_remove()
 
+    def _build_coding_specialist_tab(self):
+        """Unified Coding Specialist tab with brand selector."""
+        texts = LOCALIZATION[self.current_lang]
+        tab = self.tabview.tab("Coding Specialist")
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(1, weight=1)
+
+        # Brand Selector at the Top
+        selector_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        selector_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(5, 2))
+        
+        brand_lbl = ctk.CTkLabel(selector_frame, text=texts.get("coding_brand_lbl", "Wybierz Grupę Motoryzacyjną:"), font=ctk.CTkFont(weight="bold"))
+        brand_lbl.pack(side="left", padx=5)
+        self._coding_brand_lbl_i18n = brand_lbl
+
+        brands = ["VAG Specialist", "Stellantis Specialist", "Renault Specialist", "Hyundai / Kia"]
+        self.coding_brand_menu = ctk.CTkOptionMenu(selector_frame, values=brands, command=self._on_coding_brand_changed)
+        self.coding_brand_menu.pack(side="left", padx=10)
+
+        # Container for brand-specific UI
+        self.coding_container = ctk.CTkFrame(tab, fg_color="transparent")
+        self.coding_container.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
+        self.coding_container.grid_columnconfigure(0, weight=1)
+        self.coding_container.grid_rowconfigure(0, weight=1)
+
+        # Initial view
+        self._on_coding_brand_changed("VAG Specialist")
+
+    def _on_coding_brand_changed(self, brand):
+        """Switches the view inside the coding container."""
+        # Clear container
+        for widget in self.coding_container.winfo_children():
+            widget.destroy()
+
+        if brand == "VAG Specialist":
+            self._build_vag_tab(self.coding_container)
+        elif brand == "Stellantis Specialist":
+            self._build_stellantis_tab(self.coding_container)
+        elif brand == "Renault Specialist":
+            self._build_ren_tab(self.coding_container)
+        elif brand == "Hyundai / Kia":
+            self._build_h_k_tab(self.coding_container)
+
     def _build_diagnostics_tab(self):
         texts = LOCALIZATION[self.current_lang]
         tab = self.tabview.tab("Diagnostics")
@@ -1747,10 +1944,9 @@ class OBDApp(ctk.CTk):
         self.dtc_text.insert("0.0", texts["dtc_header"])
         self.dtc_text.configure(state="disabled")
 
-    def _build_vag_tab(self):
-        """Buduje zakładkę VAG Specialist."""
+    def _build_vag_tab(self, tab):
+        """Buduje widok VAG Specialist."""
         texts = LOCALIZATION[self.current_lang]
-        tab = self.tabview.tab("VAG Specialist")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
 
@@ -1759,7 +1955,7 @@ class OBDApp(ctk.CTk):
         self._vag_cat_labels = {}
 
         warn_frame = ctk.CTkFrame(tab, fg_color=("#FFE4C4", "#3d2b1f"), border_width=1, border_color=("#FF9900", "#ff8c00"))
-        warn_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
+        warn_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=4)
         ctk.CTkLabel(warn_frame, text="⚠️ VAG SPECIALIST - EXPERT MODE", font=ctk.CTkFont(weight="bold"), text_color="#ff8c00").pack(pady=(5, 0))
         vag_warn_lbl = ctk.CTkLabel(warn_frame, text=texts["vag_warning_text"], font=ctk.CTkFont(size=11), wraplength=800)
         vag_warn_lbl.pack(pady=10, padx=20)
@@ -1850,10 +2046,9 @@ class OBDApp(ctk.CTk):
         self._zdc_load_btn.grid(row=1, column=4, padx=(4, 15), pady=8)
         self._vag_i18n_widgets["zdc_upload"] = self._zdc_load_btn
 
-    def _build_stellantis_tab(self):
-        """Buduje zakładkę Stellantis Specialist."""
+    def _build_stellantis_tab(self, tab):
+        """Buduje widok Stellantis Specialist."""
         texts = LOCALIZATION[self.current_lang]
-        tab = self.tabview.tab("Stellantis Specialist")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(2, weight=1)
 
@@ -1863,7 +2058,7 @@ class OBDApp(ctk.CTk):
 
         # 1. Nagłówek i Selektory
         header_frame = ctk.CTkFrame(tab, fg_color="transparent")
-        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=5)
 
         brand_lbl = ctk.CTkLabel(header_frame, text=texts.get("stl_brand_lbl", "Marka:"), font=ctk.CTkFont(weight="bold"))
         brand_lbl.pack(side="left", padx=5)
@@ -1881,7 +2076,7 @@ class OBDApp(ctk.CTk):
 
         # 2. Ostrzeżenie
         warn_frame = ctk.CTkFrame(tab, fg_color=("#FFE4C4", "#3d2b1f"), border_width=1, border_color=("#FF9900", "#ff8c00"))
-        warn_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=5)
+        warn_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=2)
         self.stl_warn_lbl = ctk.CTkLabel(warn_frame, text=texts.get("stl_warning", "UWAGA: Tryb Ekspert Stellantis. Tylko dla aut z szyną CAN."), font=ctk.CTkFont(size=11), wraplength=800)
         self.stl_warn_lbl.pack(pady=10, padx=20)
         self._stl_i18n_widgets["stl_warning"] = self.stl_warn_lbl
@@ -1938,6 +2133,303 @@ class OBDApp(ctk.CTk):
         # Wait, self.stl_brand_menu needs to be assigned before _on_stl_brand_changed
         self._on_stl_brand_changed(self.stl_brand_menu.get())
 
+    def _build_ren_tab(self, tab):
+        """Buduje widok Renault Specialist."""
+        texts = LOCALIZATION[self.current_lang]
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(2, weight=1)
+
+        self._ren_i18n_widgets = {}
+        self._ren_tweak_widgets = {}
+
+        # 1. Nagłówek i Selektory
+        header_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=5)
+
+        brand_lbl = ctk.CTkLabel(header_frame, text=texts.get("ren_brand_lbl", "Model:"), font=ctk.CTkFont(weight="bold"))
+        brand_lbl.pack(side="left", padx=5)
+        self._ren_i18n_widgets["ren_brand_lbl"] = brand_lbl
+
+        self.ren_model_menu = ctk.CTkOptionMenu(header_frame, values=list(self.RENAULT_TWEAKS_CONFIG.keys()), command=self._on_ren_model_changed)
+        self.ren_model_menu.pack(side="left", padx=10)
+
+        # 2. Ostrzeżenie
+        warn_frame = ctk.CTkFrame(tab, fg_color=("#FFE4C4", "#3d2b1f"), border_width=1, border_color=("#FF9900", "#ff8c00"))
+        warn_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=2)
+        self.ren_warn_lbl = ctk.CTkLabel(warn_frame, text=texts.get("stl_warning", "UWAGA: Tryb Ekspert."), font=ctk.CTkFont(size=11), wraplength=800)
+        self.ren_warn_lbl.pack(pady=10, padx=20)
+        self._ren_i18n_widgets["stl_warning"] = self.ren_warn_lbl
+
+        # 3. Lista Tweaków (Scrollable)
+        self.ren_tweak_scroll = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+        self.ren_tweak_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
+
+        # 4. Expert Mode Frame
+        expert_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color="#1E3A5F", corner_radius=12)
+        expert_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=(12, 4))
+        
+        exp_header = ctk.CTkLabel(expert_frame, text=texts.get("ren_expert_desc", "TRYB EKSPERCKI (RENAULT)"), font=ctk.CTkFont(size=12, weight="bold"))
+        exp_header.grid(row=0, column=0, columnspan=5, padx=15, pady=(10, 5), sticky="w")
+        self._ren_i18n_widgets["ren_expert_desc"] = exp_header
+
+        ctk.CTkLabel(expert_frame, text=texts["vag_header_lbl"]).grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
+        self._ren_expert_header = ctk.CTkEntry(expert_frame, width=80, placeholder_text="770")
+        self._ren_expert_header.grid(row=1, column=1, padx=5, pady=8)
+
+        ctk.CTkLabel(expert_frame, text=texts["vag_command_lbl"]).grid(row=1, column=2, padx=(15, 5), pady=8, sticky="w")
+        self._ren_expert_cmd = ctk.CTkEntry(expert_frame, width=300, placeholder_text="1003")
+        self._ren_expert_cmd.grid(row=1, column=3, padx=5, pady=8)
+        
+        self._ren_expert_send_btn = ctk.CTkButton(expert_frame, text=texts.get("vag_btn_send", "Wyślij HEX"), width=100, command=self.action_ren_send_hex)
+        self._ren_expert_send_btn.grid(row=1, column=4, padx=(5, 15), pady=8)
+        self._ren_i18n_widgets["vag_btn_send"] = self._ren_expert_send_btn
+
+        # 5. Dataset Loader Frame
+        zdc_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color="#5C1F0A", corner_radius=12)
+        zdc_frame.grid(row=4, column=0, sticky="ew", padx=20, pady=(4, 12))
+        
+        zdc_title = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_section_header", "Dataset Loader"), font=ctk.CTkFont(size=12, weight="bold"), text_color="#ff8c00")
+        zdc_title.grid(row=0, column=0, columnspan=5, padx=15, pady=(10, 5), sticky="w")
+        self._ren_i18n_widgets["zdc_section_header"] = zdc_title
+
+        ctk.CTkLabel(zdc_frame, text=texts.get("zdc_module_label", "Module:")).grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
+        self._ren_zdc_mod_entry = ctk.CTkEntry(zdc_frame, width=60, placeholder_text="770")
+        self._ren_zdc_mod_entry.grid(row=1, column=1, padx=5, pady=8)
+        
+        self._ren_zdc_file_lbl = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_choose_file", "Wybierz plik..."), font=ctk.CTkFont(size=11), text_color="#aaaaaa", width=320, anchor="w")
+        self._ren_zdc_file_lbl.grid(row=1, column=2, padx=10, pady=8, sticky="ew")
+
+        ctk.CTkButton(zdc_frame, text=texts.get("folder_btn", "Browse"), width=130, fg_color="#2a3a50", command=self._action_ren_zdc_browse).grid(row=1, column=3, padx=5, pady=8)
+        self._ren_zdc_load_btn = ctk.CTkButton(zdc_frame, text=texts.get("zdc_upload", "Upload"), width=130, fg_color="#8B3A1E", command=self._action_ren_zdc_load)
+        self._ren_zdc_load_btn.grid(row=1, column=4, padx=(5, 15), pady=8)
+        self._ren_i18n_widgets["zdc_upload"] = self._ren_zdc_load_btn
+
+        self._on_ren_model_changed(self.ren_model_menu.get())
+
+    def _build_h_k_tab(self, tab):
+        """Buduje widok Hyundai / Kia Specialist."""
+        texts = LOCALIZATION[self.current_lang]
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(2, weight=1)
+
+        self._h_k_i18n_widgets = {}
+        self._h_k_tweak_widgets = {}
+
+        # 1. Nagłówek i Selektory
+        header_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=5)
+
+        model_lbl = ctk.CTkLabel(header_frame, text=texts.get("h_k_model_lbl", "Model:"), font=ctk.CTkFont(weight="bold"))
+        model_lbl.pack(side="left", padx=5)
+        self._h_k_i18n_widgets["h_k_model_lbl"] = model_lbl
+
+        self.h_k_model_menu = ctk.CTkOptionMenu(header_frame, values=list(self.HYUNDAI_KIA_TWEAKS_CONFIG.keys()), command=self._on_h_k_model_changed)
+        self.h_k_model_menu.pack(side="left", padx=10)
+
+        # 2. Ostrzeżenie
+        warn_frame = ctk.CTkFrame(tab, fg_color=("#FFE4C4", "#3d2b1f"), border_width=1, border_color=("#FF9900", "#ff8c00"))
+        warn_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=2)
+        self.h_k_warn_lbl = ctk.CTkLabel(warn_frame, text=texts.get("stl_warning", "UWAGA: Tryb Ekspert."), font=ctk.CTkFont(size=11), wraplength=800)
+        self.h_k_warn_lbl.pack(pady=10, padx=20)
+        self._h_k_i18n_widgets["stl_warning"] = self.h_k_warn_lbl
+
+        # 3. Lista Tweaków (Scrollable)
+        self.h_k_tweak_scroll = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+        self.h_k_tweak_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
+
+        # 4. Expert Mode Frame
+        expert_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color="#1E3A5F", corner_radius=12)
+        expert_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=(12, 4))
+        
+        exp_header = ctk.CTkLabel(expert_frame, text=texts.get("h_k_expert_desc", "TRYB EKSPERCKI (HYUNDAI / KIA)"), font=ctk.CTkFont(size=12, weight="bold"))
+        exp_header.grid(row=0, column=0, columnspan=5, padx=15, pady=(10, 5), sticky="w")
+        self._h_k_i18n_widgets["h_k_expert_desc"] = exp_header
+
+        ctk.CTkLabel(expert_frame, text=texts["vag_header_lbl"]).grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
+        self._h_k_expert_header = ctk.CTkEntry(expert_frame, width=80, placeholder_text="7C0")
+        self._h_k_expert_header.grid(row=1, column=1, padx=5, pady=8)
+
+        ctk.CTkLabel(expert_frame, text=texts["vag_command_lbl"]).grid(row=1, column=2, padx=(15, 5), pady=8, sticky="w")
+        self._h_k_expert_cmd = ctk.CTkEntry(expert_frame, width=300, placeholder_text="1003")
+        self._h_k_expert_cmd.grid(row=1, column=3, padx=5, pady=8)
+        
+        self._h_k_expert_send_btn = ctk.CTkButton(expert_frame, text=texts.get("vag_btn_send", "Wyślij HEX"), width=100, command=self.action_h_k_send_hex)
+        self._h_k_expert_send_btn.grid(row=1, column=4, padx=(5, 15), pady=8)
+        self._h_k_i18n_widgets["vag_btn_send"] = self._h_k_expert_send_btn
+
+        # 5. Dataset Loader Frame
+        zdc_frame = ctk.CTkFrame(tab, fg_color=("#F2F2F5", "#1a1a2e"), border_width=1, border_color="#5C1F0A", corner_radius=12)
+        zdc_frame.grid(row=4, column=0, sticky="ew", padx=20, pady=(4, 12))
+        
+        zdc_title = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_section_header", "Dataset Loader"), font=ctk.CTkFont(size=12, weight="bold"), text_color="#ff8c00")
+        zdc_title.grid(row=0, column=0, columnspan=5, padx=15, pady=(10, 5), sticky="w")
+        self._h_k_i18n_widgets["zdc_section_header"] = zdc_title
+
+        ctk.CTkLabel(zdc_frame, text=texts.get("zdc_module_label", "Module:")).grid(row=1, column=0, padx=(15, 5), pady=8, sticky="w")
+        self._h_k_zdc_mod_entry = ctk.CTkEntry(zdc_frame, width=60, placeholder_text="7C0")
+        self._h_k_zdc_mod_entry.grid(row=1, column=1, padx=5, pady=8)
+        
+        self._h_k_file_lbl = ctk.CTkLabel(zdc_frame, text=texts.get("zdc_choose_file", "Wybierz plik..."), font=ctk.CTkFont(size=11), text_color="#aaaaaa", width=320, anchor="w")
+        self._h_k_file_lbl.grid(row=1, column=2, padx=10, pady=8, sticky="ew")
+
+        ctk.CTkButton(zdc_frame, text=texts.get("folder_btn", "Browse"), width=130, fg_color="#2a3a50", command=self._action_h_k_zdc_browse).grid(row=1, column=3, padx=5, pady=8)
+        self._h_k_zdc_load_btn = ctk.CTkButton(zdc_frame, text=texts.get("zdc_upload", "Upload"), width=130, fg_color="#8B3A1E", command=self._action_h_k_zdc_load)
+        self._h_k_zdc_load_btn.grid(row=1, column=4, padx=(5, 15), pady=8)
+        self._h_k_i18n_widgets["zdc_upload"] = self._h_k_zdc_load_btn
+
+        self._on_h_k_model_changed(self.h_k_model_menu.get())
+
+    def _on_ren_model_changed(self, model):
+        self._update_specialist_list_generic(self.ren_tweak_scroll, self.RENAULT_TWEAKS_CONFIG, model, self.ren_restore_buttons, self._ren_tweak_widgets, self._execute_ren_tweak, self._restore_ren_tweak)
+
+    def _on_h_k_model_changed(self, model):
+        self._update_specialist_list_generic(self.h_k_tweak_scroll, self.HYUNDAI_KIA_TWEAKS_CONFIG, model, self.h_k_restore_buttons, self._h_k_tweak_widgets, self._execute_h_k_tweak, self._restore_h_k_tweak)
+
+    def _update_specialist_list_generic(self, scroll, config, model, restore_btns_dict, widgets_dict, exec_func, restore_func):
+        for child in scroll.winfo_children(): child.destroy()
+        tweaks = config.get(model, [])
+        texts = LOCALIZATION[self.current_lang]
+        if not tweaks:
+            ctk.CTkLabel(scroll, text=texts.get("stl_no_tweaks", "Brak dostępnych tweaków.")).pack(pady=20)
+            return
+        
+        grouped = {}
+        for t in tweaks:
+            cat = t.get("category", "comfort")
+            if cat not in grouped: grouped[cat] = []
+            grouped[cat].append(t)
+        
+        for c in ["dash", "engine", "elec", "comfort"]:
+            if c not in grouped: continue
+            ctk.CTkLabel(scroll, text=texts.get(f"stl_cat_{c}", c).upper(), font=ctk.CTkFont(size=13, weight="bold"), text_color="#3a7ebf").pack(anchor="w", padx=20, pady=(15, 5))
+            for tweak in grouped[c]:
+                f = ctk.CTkFrame(scroll, corner_radius=10, border_width=1, border_color="#45456b", fg_color="#1a1a2e")
+                f.pack(fill="x", padx=10, pady=3)
+                lbl_name = ctk.CTkLabel(f, text=texts.get(tweak["name_key"], tweak["id"]), font=ctk.CTkFont(weight="bold"))
+                lbl_name.pack(side="left", padx=15, pady=12)
+                
+                btn_apply = ctk.CTkButton(f, text=texts.get("stl_btn_apply", "Wykonaj"), width=100, fg_color="#1E3A5F", command=lambda t=tweak: exec_func(t))
+                btn_apply.pack(side="right", padx=10, pady=10)
+                
+                did_to_check = ""
+                for cmd_raw in reversed(tweak.get("commands", [])):
+                    cmd_str = str(cmd_raw).replace(" ","")
+                    if cmd_str.startswith("2E") and len(cmd_str) >= 6:
+                        did_to_check = cmd_str[2:6]; break
+                
+                has_backup = False
+                if did_to_check:
+                    has_backup = self.backend.get_vag_backup(tweak["module"], did_to_check) is not None
+
+                btn_restore = ctk.CTkButton(f, text=texts.get("stl_btn_restore", "Przywróć"), width=100, fg_color="#5F1E1E", state="normal" if has_backup else "disabled", command=lambda t=tweak: restore_func(t))
+                btn_restore.pack(side="right", padx=5, pady=10)
+                restore_btns_dict[tweak["id"]] = btn_restore
+                widgets_dict[tweak["id"]] = {"name_lbl": lbl_name, "apply_btn": btn_apply, "restore_btn": btn_restore, "name_key": tweak["name_key"]}
+
+    def _execute_ren_tweak(self, tweak):
+        self._execute_specialist_tweak_generic(tweak, self.ren_restore_buttons)
+
+    def _restore_ren_tweak(self, tweak):
+        self._restore_specialist_tweak_generic(tweak, self.ren_restore_buttons)
+
+    def _execute_h_k_tweak(self, tweak):
+        self._execute_specialist_tweak_generic(tweak, self.h_k_restore_buttons)
+
+    def _restore_h_k_tweak(self, tweak):
+        self._restore_specialist_tweak_generic(tweak, self.h_k_restore_buttons)
+
+    def _execute_specialist_tweak_generic(self, tweak, restore_btns_dict):
+        texts = LOCALIZATION[self.current_lang]
+        if messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_confirm_msg", "Czy wykonać ten tweak?")):
+            ok, res = self.backend.execute_uds_custom(tweak["module"], tweak["commands"])
+            if ok:
+                messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_applied", "Tweak zastosowany!"))
+                if tweak["id"] in restore_btns_dict: restore_btns_dict[tweak["id"]].configure(state="normal")
+            else:
+                messagebox.showerror(texts.get("err_title", "Błąd"), res)
+
+    def _restore_specialist_tweak_generic(self, tweak, restore_btns_dict):
+        texts = LOCALIZATION[self.current_lang]
+        if messagebox.askyesno(texts.get("stl_confirm_title", "Potwierdzenie"), texts.get("stl_restore_confirm_msg", "Przywrócić oryginał?")):
+            did_to_restore = ""
+            for cmd_raw in reversed(tweak.get("commands", [])):
+                cmd_str = str(cmd_raw).replace(" ","")
+                if cmd_str.startswith("2E") and len(cmd_str) >= 6:
+                    did_to_restore = cmd_str[2:6]; break
+            if not did_to_restore: return
+            hdr = tweak["module"]
+            orig_val = self.backend.get_vag_backup(hdr, did_to_restore)
+            if not orig_val:
+                messagebox.showerror(texts.get("err_title", "Błąd"), texts.get("stl_no_backup", "Brak kopii!"))
+                return
+            restore_cmd = f"2E{did_to_restore}{orig_val}"
+            ok, res = self.backend.execute_uds_custom(hdr, ["1003", restore_cmd], is_restore=True)
+            if ok: 
+                messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_restored", "Przywrócono!"))
+                if tweak["id"] in restore_btns_dict:
+                    restore_btns_dict[tweak["id"]].configure(state="disabled")
+            else: messagebox.showerror(texts.get("err_title", "Błąd"), res)
+
+    def action_ren_send_hex(self):
+        self._action_specialist_send_hex_generic(self._ren_expert_header, self._ren_expert_cmd)
+
+    def action_h_k_send_hex(self):
+        self._action_specialist_send_hex_generic(self._h_k_expert_header, self._h_k_expert_cmd)
+
+    def _action_specialist_send_hex_generic(self, header_entry, cmd_entry):
+        texts = LOCALIZATION[self.current_lang]
+        if not self.backend.connection or not self.backend.connection.is_connected():
+            messagebox.showwarning(texts["err_title"], texts["dtc_no_conn"])
+            return
+        hdr = header_entry.get().strip()
+        cmd = cmd_entry.get().strip()
+        if not hdr or not cmd:
+            messagebox.showwarning(texts["err_title"], "Podaj Header i Komendę!")
+            return
+        ok, res = self.backend.execute_uds_custom(hdr, [cmd])
+        if ok: messagebox.showinfo(texts.get("success", "Sukces"), f"Odpowiedź: {res}")
+        else: messagebox.showerror(texts.get("err_title", "Błąd"), res)
+
+    def _action_ren_zdc_browse(self):
+        self._action_zdc_browse_generic("_ren_zdc_filepath", self._ren_zdc_file_lbl)
+
+    def _action_h_k_zdc_browse(self):
+        self._action_zdc_browse_generic("_h_k_zdc_filepath", self._h_k_file_lbl)
+
+    def _action_ren_zdc_load(self):
+        self._action_zdc_load_generic("_ren_zdc_filepath", self._ren_zdc_mod_entry)
+
+    def _action_h_k_zdc_load(self):
+        self._action_zdc_load_generic("_h_k_zdc_filepath", self._h_k_zdc_mod_entry)
+
+    def _action_zdc_browse_generic(self, attr_name, label_widget):
+        texts = LOCALIZATION[self.current_lang]
+        path = filedialog.askopenfilename(filetypes=[("Dataset files", "*.zdc *.hex"), ("All files", "*.*")])
+        if path:
+            setattr(self, attr_name, path)
+            label_widget.configure(text=os.path.basename(path))
+
+    def _action_zdc_load_generic(self, attr_name, mod_entry):
+        texts = LOCALIZATION[self.current_lang]
+        path = getattr(self, attr_name, None)
+        mod_id = mod_entry.get().strip()
+        if not path or not os.path.exists(path):
+            messagebox.showwarning(texts["err_title"], texts["zdc_no_file"])
+            return
+        if not mod_id:
+            messagebox.showwarning(texts["err_title"], texts["zdc_no_module"])
+            return
+        
+        ok, data = self.backend.load_zdc_file(path)
+        if not ok:
+            messagebox.showerror(texts["err_title"], f"{texts['zdc_parse_error']} {data}")
+            return
+        
+        if messagebox.askyesno(texts["zdc_confirm_title"], texts["zdc_confirm_msg"].format(n=len(data))):
+            ok, res = self.backend.execute_uds_custom(mod_id, data)
+            if ok: messagebox.showinfo(texts["success"], texts["zdc_success"].format(m=mod_id))
+            else: messagebox.showerror(texts["err_title"], f"{texts['zdc_error']} {res}")
+
     def action_stl_send_hex(self):
         texts = LOCALIZATION[self.current_lang]
         if not self.backend.connection or not self.backend.connection.is_connected():
@@ -1988,40 +2480,58 @@ class OBDApp(ctk.CTk):
         if not tweaks:
             ctk.CTkLabel(self.stl_tweak_scroll, text=texts.get("stl_no_tweaks", "Brak dostępnych tweaków dla tego modelu.")).pack(pady=20)
             return
-        for tweak in tweaks:
-            f = ctk.CTkFrame(self.stl_tweak_scroll, corner_radius=10, border_width=1, border_color="#45456b", fg_color="#1a1a2e")
-            f.pack(fill="x", padx=10, pady=5)
-            lbl_name = ctk.CTkLabel(f, text=texts.get(tweak["name_key"], tweak["id"]), font=ctk.CTkFont(weight="bold"))
-            lbl_name.pack(side="left", padx=15, pady=12)
-            lbl_mod = ctk.CTkLabel(f, text=f"({tweak['module']})", font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
-            lbl_mod.pack(side="left", padx=2)
+
+        # Group tweaks by category
+        grouped = {}
+        for t in tweaks:
+            cat = t.get("category", "comfort")
+            if cat not in grouped: grouped[cat] = []
+            grouped[cat].append(t)
+
+        # Predefined order for consistency
+        cat_order = ["dash", "engine", "elec", "comfort"]
+        
+        for c in cat_order:
+            if c not in grouped: continue
             
-            # Check for backup to set restore button state
-            did_to_check = ""
-            for cmd_raw in reversed(tweak.get("commands", [])):
-                cmd_str = str(cmd_raw).replace(" ","")
-                if cmd_str.startswith("2E") and len(cmd_str) >= 6:
-                    did_to_check = cmd_str[2:6]; break
+            # Category Header
+            cat_name = texts.get(f"stl_cat_{c}", c).upper()
+            ctk.CTkLabel(self.stl_tweak_scroll, text=cat_name, font=ctk.CTkFont(size=13, weight="bold"), text_color="#3a7ebf").pack(anchor="w", padx=20, pady=(15, 5))
             
-            has_backup = False
-            if did_to_check:
-                # Use UDS header mapping for search
-                hdr = "714"
-                m_str = str(tweak.get("module", ""))
-                if "ECM" in m_str: hdr = "7E0"
-                elif "BCM" in m_str or "BSI" in m_str: hdr = "7A6"
-                elif "IPC" in m_str: hdr = "7A0"
-                elif len(m_str) == 3 and m_str.isalnum(): hdr = m_str
-                has_backup = self.backend.get_vag_backup(hdr, did_to_check) is not None
-            
-            btn_apply = ctk.CTkButton(f, text=texts.get("stl_btn_apply", "Wykonaj"), width=100, fg_color="#1E3A5F", command=lambda t=tweak: self._execute_stl_tweak(t))
-            btn_apply.pack(side="right", padx=10, pady=10)
-            
-            btn_restore = ctk.CTkButton(f, text=texts.get("stl_btn_restore", "Przywróć"), width=100, fg_color="#5F1E1E", state="normal" if has_backup else "disabled", command=lambda t=tweak: self._restore_stl_tweak(t))
-            btn_restore.pack(side="right", padx=5, pady=10)
-            
-            self.stl_restore_buttons[tweak["id"]] = btn_restore
-            self._stl_tweak_widgets[tweak["id"]] = {"name_lbl": lbl_name, "apply_btn": btn_apply, "restore_btn": btn_restore, "name_key": tweak["name_key"]}
+            for tweak in grouped[c]:
+                f = ctk.CTkFrame(self.stl_tweak_scroll, corner_radius=10, border_width=1, border_color="#45456b", fg_color="#1a1a2e")
+                f.pack(fill="x", padx=10, pady=3)
+                lbl_name = ctk.CTkLabel(f, text=texts.get(tweak["name_key"], tweak["id"]), font=ctk.CTkFont(weight="bold"))
+                lbl_name.pack(side="left", padx=15, pady=12)
+                lbl_mod = ctk.CTkLabel(f, text=f"({tweak['module']})", font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
+                lbl_mod.pack(side="left", padx=2)
+                
+                # Check for backup to set restore button state
+                did_to_check = ""
+                for cmd_raw in reversed(tweak.get("commands", [])):
+                    cmd_str = str(cmd_raw).replace(" ","")
+                    if cmd_str.startswith("2E") and len(cmd_str) >= 6:
+                        did_to_check = cmd_str[2:6]; break
+                
+                has_backup = False
+                if did_to_check:
+                    # Use UDS header mapping for search
+                    hdr = "714"
+                    m_str = str(tweak.get("module", ""))
+                    if "ECM" in m_str: hdr = "7E0"
+                    elif "BCM" in m_str or "BSI" in m_str: hdr = "7A6"
+                    elif "IPC" in m_str: hdr = "7A0"
+                    elif len(m_str) == 3 and m_str.isalnum(): hdr = m_str
+                    has_backup = self.backend.get_vag_backup(hdr, did_to_check) is not None
+                
+                btn_apply = ctk.CTkButton(f, text=texts.get("stl_btn_apply", "Wykonaj"), width=100, fg_color="#1E3A5F", command=lambda t=tweak: self._execute_stl_tweak(t))
+                btn_apply.pack(side="right", padx=10, pady=10)
+                
+                btn_restore = ctk.CTkButton(f, text=texts.get("stl_btn_restore", "Przywróć"), width=100, fg_color="#5F1E1E", state="normal" if has_backup else "disabled", command=lambda t=tweak: self._restore_stl_tweak(t))
+                btn_restore.pack(side="right", padx=5, pady=10)
+                
+                self.stl_restore_buttons[tweak["id"]] = btn_restore
+                self._stl_tweak_widgets[tweak["id"]] = {"name_lbl": lbl_name, "apply_btn": btn_apply, "restore_btn": btn_restore, "name_key": tweak["name_key"]}
 
     def _execute_stl_tweak(self, tweak):
         texts = LOCALIZATION[self.current_lang]
@@ -2066,6 +2576,8 @@ class OBDApp(ctk.CTk):
             ok, res = self.backend.execute_uds_custom(hdr, ["1003", restore_cmd], is_restore=True)
             if ok:
                 messagebox.showinfo(texts.get("success", "Sukces"), texts.get("stl_tweak_restored", "Przywrócono!"))
+                if tweak["id"] in self.stl_restore_buttons:
+                    self.stl_restore_buttons[tweak["id"]].configure(state="disabled")
             else:
                 messagebox.showerror(texts.get("err_title", "Błąd"), res)
 
@@ -2105,6 +2617,8 @@ class OBDApp(ctk.CTk):
         ok, res = self.backend.execute_vag_restore(tweak["module"], did, tweak.get("security"))
         if ok:
             messagebox.showinfo(texts.get("success", "Sukces"), f"{name}: {texts.get('vag_tweak_restored', 'Przywrócono oryginał!')}\n{res}")
+            if tweak["id"] in self.vag_restore_buttons:
+                self.vag_restore_buttons[tweak["id"]].configure(state="disabled")
         else:
             messagebox.showerror(texts.get("err_title", "Błąd"), f"{name}: {res}")
 
